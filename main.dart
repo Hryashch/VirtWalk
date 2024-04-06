@@ -2,13 +2,15 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'panoram.dart';
 import 'placeitem.dart';
+import 'placesearch.dart';
+import 'testgoogleview.dart';
 
 const places = ['набережная с пальмами',
   'узкая европейская улица',
   'средневековый замок',
   'горный перевал',
   'Эмпайр стейт',
-  'Красная площадь'//здесь был Joykorg
+  'Красная площадь'
 ];
 
 void main() {
@@ -36,6 +38,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  bool showGrid = false;
   Color cTheme = Color.fromARGB(255, 83, 152, 255);
   String srch = "";
 
@@ -44,36 +47,35 @@ class _HomePageState extends State<HomePage> {
       cTheme = getRandomColor(); 
     });
   }
-  void display(){
-    showModalBottomSheet(
-      isScrollControlled: true,
-      backgroundColor: Color.fromARGB(255, 255, 246, 240),
-      context: context,
-      builder: (BuildContext context){
-        return SingleChildScrollView( 
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom, 
-          ),
-          child: Container(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.9, 
-            ),
-            child: PlacesGrid(name: srch),
-          ),
-        );
-      }
-    );
-    
+
+  void searchPlaces() async{
+    List s = await fetchSearchResults(srch,'AIzaSyCTlg-EnxrEQRrySUcuh8-eHH9BWO3K7vQ','86627b099bf254a71');
+    print(s.toString());
   }
 
-  void displayBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return PlacesGrid(name:srch);
-      },
-    );
-  } 
+  // void display(){
+  //   showModalBottomSheet(
+  //     isScrollControlled: true,
+  //     backgroundColor: Color.fromARGB(255, 255, 246, 240),
+  //     context: context,
+  //     builder: (BuildContext context){
+  //       return SingleChildScrollView( 
+  //         padding: EdgeInsets.only(
+  //           bottom: MediaQuery.of(context).viewInsets.bottom, 
+  //         ),
+  //         child: Container(
+  //           constraints: BoxConstraints(
+  //             maxHeight: MediaQuery.of(context).size.height * 0.9, 
+  //           ),
+  //           child: PlacesGrid(name: srch),
+  //         ),
+  //       );
+  //     }
+  //   );
+    
+  // }
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -103,20 +105,25 @@ class _HomePageState extends State<HomePage> {
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text(
-                  'Куда пойдем гулять сегодня? \n Введите описание места:',
-                  style: TextStyle(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.bold,
-                    color: cTheme,
-                  ),
-                  textAlign: TextAlign.center,
+              children: [
+                
+                if(!showGrid)Column(
+                  children: [
+                    Text(
+                      'Куда пойдем гулять сегодня? \n Введите описание места:',
+                      style: TextStyle(
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
+                        color: cTheme,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 40),
+                  ],
                 ),
-                SizedBox(height: 40),
                 Container(
                   constraints: BoxConstraints( maxWidth: 500),
-                  child: TextField(
+                  child: TextField( 
                     decoration: InputDecoration(
                       focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(
@@ -133,11 +140,12 @@ class _HomePageState extends State<HomePage> {
                       srch = value;
                     },
                     onSubmitted: (value) {
-                      displayBottomSheet(context);
-
-                      // setState(() {
+                      //display();
+                      //Navigator.of(context).push(MaterialPageRoute(builder: (context) => PlacesGrid(name: value)));
+                      setState(() {
+                        showGrid = value.isNotEmpty;
                       //   display();
-                      // });
+                      });
                     },
                   ),
                 ),
@@ -159,13 +167,16 @@ class _HomePageState extends State<HomePage> {
                       )),
                     ),
                     onPressed: (){
-                      updateColor();
-                      print(srch);
-                      //display();
-                      Navigator.push(
-                        context, 
-                        MaterialPageRoute(builder: (context) => PanoramViewScreen())
-                      );
+                      //updateColor();
+                      //print(srch);
+                      
+                      //searchPlaces();
+                      
+                      //Navigator.of(context).push(MaterialPageRoute(builder: (context) => StreetViewImage()));
+
+                      setState(() {
+                        showGrid = srch.isNotEmpty;
+                      });
                     },
                     child: RichText(
                       text:const TextSpan(
@@ -176,6 +187,10 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 //PlaceItem(';jgf')
+                if(showGrid)
+                  Expanded(
+                    child: PlacesGrid(name: srch), 
+                  )
               ],
             ),
           ),

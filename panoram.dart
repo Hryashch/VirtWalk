@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:panorama/panorama.dart';
+//import 'package:panorama/panorama.dart';
+import 'package:panorama_viewer/panorama_viewer.dart';
+import 'testgoogleview.dart';
 
 
 
@@ -16,16 +17,21 @@ class PanoramViewScreenState extends State<PanoramViewScreen> {
   late Image panoram;
   @override
   void initState() {
-    super.initState();
-    print('initState');
+    // super.initState();
+    // print('initState');
     cTheme = const Color.fromARGB(255, 246, 145, 114);
     panoramURL = 'https://static.dermandar.com/php/getimage.php?epid=clmJly&equi=1&w=1024&h=512';
     panoram = Image.network(panoramURL);
+    //panoram = getPanoramImageFromGoogle() as Image;
+    
   }
   @override
   void dispose() {
     super.dispose();
-    print('dispose');
+  }
+
+  Future<gottenImage> getPanoramImageFromGoogle() async {
+   return await gottenImage();
   }
 
   @override
@@ -58,23 +64,20 @@ class PanoramViewScreenState extends State<PanoramViewScreen> {
         children:[
           Center(
             child: Container(
-              child:
-              Center(
-                child: Image.network(panoramURL),
-              ),
-              // child: Panorama(
-              //   //child: Image.asset('assets/p.jpg'),
-              //   animSpeed: 2,
-              //   sensitivity: 1,        
-              //   onTap: (longitude, latitude, tilt) {
-              //     print(this.panoramURL);
-              //     // setState(() {
-                    
-              //     // });
-              //   },
-              //   //child: Image.asset('assets/p.jpg'),
-              //   child: panoram,      
+              //child:
+              // Center(
               // ),
+              
+              child: PanoramaViewer(
+                animSpeed: 2,
+                sensitivity: 1,        
+                // onTap: (longitude, latitude, tilt) {
+                //   reassemble();
+                // },
+                //child: Image.asset('assets/p.jpg'),
+                child: panoram,
+                //child: Image.network('https://static.dermandar.com/php/getimage.php?epid=clmJly&equi=1&w=1024&h=512'),
+              ),
             
             ),
           ),

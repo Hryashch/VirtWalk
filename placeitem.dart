@@ -19,8 +19,10 @@ class _PlaceItemState extends State<PlaceItem> {
   Widget build(BuildContext context) {
     return Container(
       constraints: const BoxConstraints(
-        maxHeight: 130,
-        maxWidth: 100
+        minWidth: 200,
+        minHeight: 130,
+        maxHeight: 150,
+        maxWidth: 300
       ),
       // width: 130,
       // height: 130,
@@ -110,6 +112,9 @@ class _PlacesGridState extends State<PlacesGrid> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      constraints: BoxConstraints(
+        maxWidth: 600
+      ),
       padding: EdgeInsets.all(16.0),
       child: GridView.builder(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
