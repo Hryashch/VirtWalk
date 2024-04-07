@@ -1,9 +1,33 @@
-import 'dart:math';
+// import 'dart:js_interop';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_google_places_sdk/flutter_google_places_sdk.dart';
+
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+
+import 'placesearch.dart';    
+
+
 import 'panoram.dart';
 import 'placeitem.dart';
-import 'placesearch.dart';
 import 'testgoogleview.dart';
+
+                // List<dynamic> places = await getSearchResults('red bridge');
+                // for ( int i = 0; i < places.length; i++ ) {
+                //   print(' $i '*10);
+                //   print(places[i]['name']);
+                //   print(places[i]['formatted_address']);
+                //   print(places[i]['geometry']['location']['lat']);
+                //   print(places[i]['geometry']['location']['lng']);
+                  
+                // }
+
+
+import 'dart:math';
+import 'package:flutter/material.dart';
+
 
 const places = ['набережная с пальмами',
   'узкая европейская улица',
@@ -41,17 +65,17 @@ class _HomePageState extends State<HomePage> {
   bool showGrid = false;
   Color cTheme = Color.fromARGB(255, 83, 152, 255);
   String srch = "";
-
+  late List<dynamic> ps;
   void updateColor() {
     setState(() {
       cTheme = getRandomColor(); 
     });
   }
 
-  void searchPlaces() async{
-    List s = await fetchSearchResults(srch,'AIzaSyCTlg-EnxrEQRrySUcuh8-eHH9BWO3K7vQ','86627b099bf254a71');
-    print(s.toString());
-  }
+  // void searchPlaces() async{
+  //   List s = await fetchSearchResults(srch,'AIzaSyCTlg-EnxrEQRrySUcuh8-eHH9BWO3K7vQ','86627b099bf254a71');
+  //   print(s.toString());
+  // }
 
   // void display(){
   //   showModalBottomSheet(
@@ -139,13 +163,16 @@ class _HomePageState extends State<HomePage> {
                     onChanged: (value) {
                       srch = value;
                     },
-                    onSubmitted: (value) {
-                      //display();
+                    onSubmitted: (value) async {
+                      if(srch.isNotEmpty) {
+                        ps = await getSearchResults(srch);
+                      }//display();
                       //Navigator.of(context).push(MaterialPageRoute(builder: (context) => PlacesGrid(name: value)));
                       setState(() {
                         showGrid = value.isNotEmpty;
                       //   display();
                       });
+                      
                     },
                   ),
                 ),
@@ -166,7 +193,11 @@ class _HomePageState extends State<HomePage> {
                         ),
                       )),
                     ),
-                    onPressed: (){
+                    onPressed: () async {
+                      if(srch.isNotEmpty) {
+                        ps = await getSearchResults(srch);
+                      }
+                      //print(ps.toString());
                       //updateColor();
                       //print(srch);
                       
@@ -186,10 +217,11 @@ class _HomePageState extends State<HomePage> {
                       ),
                   ),
                 ),
-                //PlaceItem(';jgf')
+                //PlaceItem(';jgf') 
                 if(showGrid)
                   Expanded(
-                    child: PlacesGrid(name: srch), 
+                    // child: PlacesGrid(name: srch), 
+                    child:  PlacesGrid.fromPlace(ps: ps) ,
                   )
               ],
             ),

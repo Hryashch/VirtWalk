@@ -1,13 +1,33 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:virtwalk/placesearch.dart';
 import 'panoram.dart';
+
+
+
 
 class PlaceItem extends StatefulWidget {
   late String placeName;
   late String imageURL;
-
+  late dynamic p;
+  late dynamic img;
+  late List<dynamic> photos;
   PlaceItem(String name){
     placeName = name;
     imageURL = '';
+  }
+
+  PlaceItem.fromPlace(dynamic pl){
+    placeName = pl['name'];
+    p =pl;
+    _getImg();
+
+  }
+
+  Future<void> _getImg()async {
+    photos = await getPhotosForPlace(p);
+    img = photos[0];
   }
 
   @override
@@ -40,18 +60,26 @@ class _PlaceItemState extends State<PlaceItem> {
       ),
       child: Column(
         children: [
-          Image(
-            image: AssetImage(this.widget.imageURL),
-            // width: 100,
-            // height: 100,
-            errorBuilder: (context, error, stackTrace) {
-              return const Icon(
-                Icons.error,
-                color: Color.fromARGB(255, 255, 85, 73),
-                size: 70,
-              );
-            },
+          Image.file(
+            widget.img,
+            fit: BoxFit.cover,
+            width: 130,
+            height: 130,
           ),
+          
+          // Image(
+          //   image: widget.img,
+          //   //image: AssetImage(this.widget.imageURL),
+          //   // width: 100,
+          //   // height: 100,
+          //   // errorBuilder: (context, error, stackTrace) {
+          //   //   return const Icon(
+          //   //     Icons.error,
+          //   //     color: Color.fromARGB(255, 255, 85, 73),
+          //   //     size: 70,
+          //   //   );
+          //   // },
+          // ),
           // SizedBox(
           //   height: 1,
           // ),
@@ -60,7 +88,10 @@ class _PlaceItemState extends State<PlaceItem> {
               softWrap: false,
               maxLines: 1,
               text: TextSpan(
-                text: this.widget.placeName
+                text: this.widget.placeName,
+                style: const TextStyle(
+                  color: Color(0xff222222)
+                ),
               )
             ),
           ),
@@ -100,9 +131,12 @@ class _PlaceItemState extends State<PlaceItem> {
 
 
 class PlacesGrid extends StatefulWidget {
-  final String name; 
+  String name=''; 
+  List <dynamic>? ps;
 
   PlacesGrid({required this.name}); 
+
+  PlacesGrid.fromPlace({required this.ps});
 
   @override
   State<PlacesGrid> createState() => _PlacesGridState();
@@ -111,21 +145,35 @@ class PlacesGrid extends StatefulWidget {
 class _PlacesGridState extends State<PlacesGrid> {
   @override
   Widget build(BuildContext context) {
+    int itemCount;
+    if (widget.ps != null && widget.ps!.isNotEmpty) {
+      itemCount = widget.ps!.length;
+    } else {
+      itemCount = 60;
+    }
+
     return Container(
-      constraints: BoxConstraints(
+      constraints: const BoxConstraints(
         maxWidth: 600
       ),
-      padding: EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
       child: GridView.builder(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3, 
           mainAxisSpacing: 10.0,
           crossAxisSpacing: 10.0,
         ),
-        itemCount: 60, 
         itemBuilder: (BuildContext context, int index) {
-          return PlaceItem(widget.name);
+          try{
+            return PlaceItem.fromPlace(widget.ps![index]);
+          }
+          catch(e){
+            print('AAAAAAAAAAAAAAAAAAAAAAAA $e \n ${widget.ps![index]}');
+            return PlaceItem(widget.name);
+          }
+          
         },
+        itemCount: itemCount,
       ),
     );
   }

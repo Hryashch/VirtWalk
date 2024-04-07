@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:panorama_viewer/panorama_viewer.dart';
 import 'testgoogleview.dart';
 
+import 'package:flutter_google_places_sdk/flutter_google_places_sdk.dart';
 
 
 class PanoramViewScreen extends StatefulWidget {
