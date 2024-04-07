@@ -1,32 +1,13 @@
-// import 'dart:js_interop';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_google_places_sdk/flutter_google_places_sdk.dart';
 
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 
 
 import 'placesearch.dart';    
-
-
-import 'panoram.dart';
 import 'placeitem.dart';
 import 'testgoogleview.dart';
 
-                // List<dynamic> places = await getSearchResults('red bridge');
-                // for ( int i = 0; i < places.length; i++ ) {
-                //   print(' $i '*10);
-                //   print(places[i]['name']);
-                //   print(places[i]['formatted_address']);
-                //   print(places[i]['geometry']['location']['lat']);
-                //   print(places[i]['geometry']['location']['lng']);
-                  
-                // }
-
 
 import 'dart:math';
-import 'package:flutter/material.dart';
 
 
 const places = ['набережная с пальмами',
@@ -65,41 +46,28 @@ class _HomePageState extends State<HomePage> {
   bool showGrid = false;
   Color cTheme = Color.fromARGB(255, 83, 152, 255);
   String srch = "";
-  late List<dynamic> ps;
+  List<dynamic> ps=[];
   void updateColor() {
     setState(() {
       cTheme = getRandomColor(); 
     });
   }
-
-  // void searchPlaces() async{
-  //   List s = await fetchSearchResults(srch,'AIzaSyCTlg-EnxrEQRrySUcuh8-eHH9BWO3K7vQ','86627b099bf254a71');
-  //   print(s.toString());
-  // }
-
-  // void display(){
-  //   showModalBottomSheet(
-  //     isScrollControlled: true,
-  //     backgroundColor: Color.fromARGB(255, 255, 246, 240),
-  //     context: context,
-  //     builder: (BuildContext context){
-  //       return SingleChildScrollView( 
-  //         padding: EdgeInsets.only(
-  //           bottom: MediaQuery.of(context).viewInsets.bottom, 
-  //         ),
-  //         child: Container(
-  //           constraints: BoxConstraints(
-  //             maxHeight: MediaQuery.of(context).size.height * 0.9, 
-  //           ),
-  //           child: PlacesGrid(name: srch),
-  //         ),
-  //       );
-  //     }
-  //   );
-    
-  // }
-
-  
+  void _onSearchSubmitted() async {
+    setState(() {
+      showGrid = false;
+    });
+    if (srch.isNotEmpty) {
+      ps = await searchPlaces(srch);
+      setState(() {
+        showGrid = true; 
+      });
+    }
+    else {
+      setState(() {
+        showGrid = false; 
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +123,7 @@ class _HomePageState extends State<HomePage> {
                            width: 5
                           )
                         ),
-                      hintText: 'Например, ${places[Random().nextInt(places.length)]}',
+                      hintText: srch==''?'Например, ${places[Random().nextInt(places.length)]}' : srch,
                       border: const OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(10)),
                       ),
@@ -163,24 +131,14 @@ class _HomePageState extends State<HomePage> {
                     onChanged: (value) {
                       srch = value;
                     },
-                    onSubmitted: (value) async {
-                      if(srch.isNotEmpty) {
-                        ps = await getSearchResults(srch);
-                      }//display();
-                      //Navigator.of(context).push(MaterialPageRoute(builder: (context) => PlacesGrid(name: value)));
-                      setState(() {
-                        showGrid = value.isNotEmpty;
-                      //   display();
-                      });
+                    onSubmitted: (value) {
+                      _onSearchSubmitted();
                       
                     },
                   ),
                 ),
                 const SizedBox(height: 20),
                 Container(
-                  // decoration: BoxDecoration(
-                  //   border: Border.all(color: Color(0xFF000000), width: 1,), 
-                  //   borderRadius: const BorderRadius.all(Radius.circular(30)),),
                   child: ElevatedButton(
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all(cTheme),
@@ -193,21 +151,8 @@ class _HomePageState extends State<HomePage> {
                         ),
                       )),
                     ),
-                    onPressed: () async {
-                      if(srch.isNotEmpty) {
-                        ps = await getSearchResults(srch);
-                      }
-                      //print(ps.toString());
-                      //updateColor();
-                      //print(srch);
-                      
-                      //searchPlaces();
-                      
-                      //Navigator.of(context).push(MaterialPageRoute(builder: (context) => StreetViewImage()));
-
-                      setState(() {
-                        showGrid = srch.isNotEmpty;
-                      });
+                    onPressed: () {
+                      _onSearchSubmitted();
                     },
                     child: RichText(
                       text:const TextSpan(
@@ -217,10 +162,8 @@ class _HomePageState extends State<HomePage> {
                       ),
                   ),
                 ),
-                //PlaceItem(';jgf') 
                 if(showGrid)
                   Expanded(
-                    // child: PlacesGrid(name: srch), 
                     child:  PlacesGrid.fromPlace(ps: ps) ,
                   )
               ],

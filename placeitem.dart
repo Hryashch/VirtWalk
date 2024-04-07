@@ -1,40 +1,79 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:virtwalk/placesearch.dart';
 import 'panoram.dart';
 
-
-
-
 class PlaceItem extends StatefulWidget {
-  late String placeName;
-  late String imageURL;
-  late dynamic p;
-  late dynamic img;
-  late List<dynamic> photos;
-  PlaceItem(String name){
-    placeName = name;
-    imageURL = '';
-  }
+  final Map<String,dynamic> p;
+  dynamic img = const Icon(
+      Icons.error,
+      color: Color.fromARGB(255, 255, 85, 73),
+      size: 70,
+    );
 
-  PlaceItem.fromPlace(dynamic pl){
-    placeName = pl['name'];
-    p =pl;
-    _getImg();
+  PlaceItem({required this.p});
 
-  }
-
-  Future<void> _getImg()async {
-    photos = await getPhotosForPlace(p);
-    img = photos[0];
-  }
 
   @override
   State<PlaceItem> createState() => _PlaceItemState();
 }
 
 class _PlaceItemState extends State<PlaceItem> {
+
+  List<String> photos=[];
+  String imageURL = '';
+  String placeName = '';
+  String placeAdress = '';
+  @override
+  initState() {
+    super.initState();
+    getStuff();  
+  }
+  Future<void> getStuff() async {
+    try{
+      Map<String, dynamic> place = widget.p;
+      placeName = place['name'];
+      placeAdress = place['formatted_address'];
+
+    // Если место содержит place_id, получаем фотографии
+    if (place.containsKey('place_id')) {
+      String placeId = place['place_id'];
+      List<String> fetchedPhotos = await getPlaceImages(placeId);
+      setState(() {
+        photos = fetchedPhotos;
+      });
+    }
+
+      //widget.photos = await getPlaceImages(widget.p['place_id']);
+      if(photos.isNotEmpty) {
+        imageURL = photos[0];
+      }
+    }
+    catch(e){
+      print(e);
+    }
+  }
+  void _showAdress(context){
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text('$placeName'),
+        content: Text('$placeAdress'),
+        
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Ок'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -60,35 +99,22 @@ class _PlaceItemState extends State<PlaceItem> {
       ),
       child: Column(
         children: [
-          Image.file(
-            widget.img,
-            fit: BoxFit.cover,
-            width: 130,
-            height: 130,
+          const SizedBox(
+            height: 10,
           ),
-          
-          // Image(
-          //   image: widget.img,
-          //   //image: AssetImage(this.widget.imageURL),
-          //   // width: 100,
-          //   // height: 100,
-          //   // errorBuilder: (context, error, stackTrace) {
-          //   //   return const Icon(
-          //   //     Icons.error,
-          //   //     color: Color.fromARGB(255, 255, 85, 73),
-          //   //     size: 70,
-          //   //   );
-          //   // },
-          // ),
-          // SizedBox(
-          //   height: 1,
-          // ),
+         
+          if(imageURL !='')
+            Image.network(imageURL, height: 70,)
+          else
+            widget.img,
+         
+          Expanded(child: SizedBox()),
           Center(
             child: RichText(
               softWrap: false,
               maxLines: 1,
               text: TextSpan(
-                text: this.widget.placeName,
+                text: placeName,
                 style: const TextStyle(
                   color: Color(0xff222222)
                 ),
@@ -105,14 +131,16 @@ class _PlaceItemState extends State<PlaceItem> {
                   //setState(){};
                   Navigator.push(
                     context, 
-                    MaterialPageRoute(builder: (context) => PanoramViewScreen())
+                    MaterialPageRoute(builder: (context) => PanoramViewScreen(panUrl: imageURL,))
                   );
                 },
               ),
               IconButton(
                 icon: Icon(Icons.remove_red_eye),
                 tooltip: 'Посмотреть подробности',
-                onPressed: () {},
+                onPressed: () {
+                  _showAdress(context);
+                },
               ),
               IconButton(
                 icon: Icon(Icons.turned_in_outlined),
@@ -165,11 +193,12 @@ class _PlacesGridState extends State<PlacesGrid> {
         ),
         itemBuilder: (BuildContext context, int index) {
           try{
-            return PlaceItem.fromPlace(widget.ps![index]);
+            //return PlaceInfoWidget(place: widget.ps![index]);
+            return PlaceItem(p: widget.ps![index]);
           }
           catch(e){
             print('AAAAAAAAAAAAAAAAAAAAAAAA $e \n ${widget.ps![index]}');
-            return PlaceItem(widget.name);
+            // return PlaceItem(widget.name);
           }
           
         },
@@ -178,3 +207,15 @@ class _PlacesGridState extends State<PlacesGrid> {
     );
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+

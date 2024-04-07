@@ -3,25 +3,27 @@ import 'package:flutter/material.dart';
 import 'package:panorama_viewer/panorama_viewer.dart';
 import 'testgoogleview.dart';
 
-import 'package:flutter_google_places_sdk/flutter_google_places_sdk.dart';
 
 
 class PanoramViewScreen extends StatefulWidget {
-  PanoramViewScreen();
+  late String panUrl;
+  PanoramViewScreen({required this.panUrl});
   @override
   PanoramViewScreenState createState() => PanoramViewScreenState();
 }
 
 class PanoramViewScreenState extends State<PanoramViewScreen> {
   late Color cTheme;
-  late String panoramURL;
+  late final String panoramURL;
   late Image panoram;
   @override
   void initState() {
-    // super.initState();
+    
+    super.initState();
+    panoramURL = widget.panUrl;
     // print('initState');
     cTheme = const Color.fromARGB(255, 246, 145, 114);
-    panoramURL = 'https://static.dermandar.com/php/getimage.php?epid=clmJly&equi=1&w=1024&h=512';
+    //panoramURL = 'https://static.dermandar.com/php/getimage.php?epid=clmJly&equi=1&w=1024&h=512';
     panoram = Image.network(panoramURL);
     //panoram = getPanoramImageFromGoogle() as Image;
     
@@ -66,8 +68,7 @@ class PanoramViewScreenState extends State<PanoramViewScreen> {
           Center(
             child: Container(
               //child:
-              // Center(
-              // ),
+              
               
               child: PanoramaViewer(
                 animSpeed: 2,
