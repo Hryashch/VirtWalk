@@ -73,15 +73,15 @@ class _PlaceItemState extends State<PlaceItem> {
       ),
       // width: 130,
       // height: 130,
-      margin: EdgeInsets.all(10),
+      margin: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(10)),
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             spreadRadius: 1,
             blurRadius: 1,
-            offset: Offset(0, 1), // changes position of shadow
+            offset: const Offset(0, 1), // changes position of shadow
           ),
         ],
       ),
@@ -96,7 +96,7 @@ class _PlaceItemState extends State<PlaceItem> {
           else
             widget.img,
          
-          Expanded(child: SizedBox()),
+          const Expanded(child: SizedBox()),
           Center(
             child: RichText(
               softWrap: false,
@@ -112,8 +112,10 @@ class _PlaceItemState extends State<PlaceItem> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              //if(place.imagesUrls.isNotEmpty)
               IconButton(
-                icon: Icon(Icons.threed_rotation_rounded),
+                icon: const Icon(Icons.threed_rotation_rounded),
+                color: (place.imagesUrls.isNotEmpty ? Colors.black : const Color.fromARGB(100, 0, 0, 0)),
                 tooltip: 'Показать 3D панораму',
                 onPressed: () {
                   //setState(){};
@@ -129,14 +131,14 @@ class _PlaceItemState extends State<PlaceItem> {
                 },
               ),
               IconButton(
-                icon: Icon(Icons.remove_red_eye),
+                icon: const Icon(Icons.remove_red_eye),
                 tooltip: 'Посмотреть подробности',
                 onPressed: () {
                   _showMessage(context, place.address);
                 },
               ),
               IconButton(
-                icon: Icon(Icons.turned_in_outlined),
+                icon: const Icon(Icons.turned_in_outlined),
                 tooltip: 'Сохранить в закладки',
                 onPressed: () {},
               ),
@@ -177,7 +179,7 @@ class _PlacesGridState extends State<PlacesGrid> {
     for (var placeData in widget.ps!) {
       Place place = Place(place: placeData);
       try{
-        await place.getImages().timeout(const Duration(seconds: 1));
+        await place.getImages().timeout(const Duration(seconds: 3));
       }
       catch(e){}
       loadedPlaces.add(place);

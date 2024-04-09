@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-
-
 import 'placesearch.dart';    
 import 'placeitem.dart';
 import 'testgoogleview.dart';
@@ -33,7 +31,11 @@ class MyApp extends StatelessWidget {
 }
 Color getRandomColor(){
   Random random = new Random();
-  return Color.fromRGBO(random.nextInt(155)+100, random.nextInt(155)+100, random.nextInt(155)+100, 1.0);
+  return Color.fromRGBO(
+    random.nextInt(155)+100,
+    random.nextInt(155)+100,
+    random.nextInt(155)+100,
+    1.0);
 }
 
 
@@ -47,6 +49,7 @@ class _HomePageState extends State<HomePage> {
   Color cTheme = Color.fromARGB(255, 83, 152, 255);
   String srch = "";
   List<dynamic> ps=[];
+  TextEditingController _controller = TextEditingController();
   void updateColor() {
     setState(() {
       cTheme = getRandomColor(); 
@@ -75,19 +78,19 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Center(
           child: Container(
+            margin: const EdgeInsets.only(left: 40),
             child: Text('VirtWalker'),
-            margin: EdgeInsets.only(left: 40),
             )
           ),
         backgroundColor: cTheme.withAlpha(240),
         actions: [
           IconButton(
-                  tooltip: 'Открыть настройки',
-                  icon: Icon(Icons.settings_outlined),
-                  onPressed: () {
-                    updateColor();
-                  },
-                ),
+            tooltip: 'Открыть настройки',
+            icon: Icon(Icons.settings_outlined),
+            onPressed: () {
+              updateColor();
+            },
+          ),
         ],
       ),
       
@@ -98,7 +101,6 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                
                 if(!showGrid)Column(
                   children: [
                     Text(
@@ -110,13 +112,27 @@ class _HomePageState extends State<HomePage> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 40),
+                    const SizedBox(height: 40),
                   ],
                 ),
                 Container(
-                  constraints: BoxConstraints( maxWidth: 500),
+                  constraints: const BoxConstraints( maxWidth: 500),
                   child: TextField( 
+                    controller: _controller,
                     decoration: InputDecoration(
+                      suffixIcon: 
+                      srch!=''?
+                        IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          setState(() {
+                            srch = "";
+                            showGrid = false;
+                            _controller.clear();
+                          });
+                        },
+                      )
+                    : null,
                       focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(
                           color: cTheme,
@@ -138,29 +154,27 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Container(
-                  child: ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(cTheme),
-                      elevation: MaterialStateProperty.all(0),
-                      shape: MaterialStateProperty.all(const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(30)),
-                        side: BorderSide(
-                          color: Color(0xFF000000),
-                          width: 1.5,
-                        ),
-                      )),
-                    ),
-                    onPressed: () {
-                      _onSearchSubmitted();
-                    },
-                    child: RichText(
-                      text:const TextSpan(
-                        text: 'искать',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)
+                ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(cTheme),
+                    elevation: MaterialStateProperty.all(0),
+                    shape: MaterialStateProperty.all(const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30)),
+                      side: BorderSide(
+                        color: Color(0xFF000000),
+                        width: 1.5,
                       ),
-                      ),
+                    )),
                   ),
+                  onPressed: () {
+                    _onSearchSubmitted();
+                  },
+                  child: RichText(
+                    text:const TextSpan(
+                      text: 'искать',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)
+                    ),
+                    ),
                 ),
                 if(showGrid)
                   Expanded(
