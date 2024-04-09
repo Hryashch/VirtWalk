@@ -4,7 +4,7 @@ import 'package:virtwalk/placesearch.dart';
 import 'panoram.dart';
 
 class PlaceItem extends StatefulWidget {
-  final Map<String,dynamic> p;
+  final Place p;
   dynamic img = const Icon(
       Icons.error,
       color: Color.fromARGB(255, 255, 85, 73),
@@ -19,47 +19,35 @@ class PlaceItem extends StatefulWidget {
 }
 
 class _PlaceItemState extends State<PlaceItem> {
-
-  List<String> photos=[];
-  String imageURL = '';
-  String placeName = '';
-  String placeAdress = '';
+  late Place place;
+  
   @override
   initState() {
     super.initState();
-    getStuff();  
+    setState(() {
+      place = widget.p;
+      //load();
+    });
   }
-  Future<void> getStuff() async {
-    try{
-      Map<String, dynamic> place = widget.p;
-      placeName = place['name'];
-      placeAdress = place['formatted_address'];
-
-    // Если место содержит place_id, получаем фотографии
-    if (place.containsKey('place_id')) {
-      String placeId = place['place_id'];
-      List<String> fetchedPhotos = await getPlaceImages(placeId);
-      setState(() {
-        photos = fetchedPhotos;
-      });
-    }
-
-      //widget.photos = await getPlaceImages(widget.p['place_id']);
-      if(photos.isNotEmpty) {
-        imageURL = photos[0];
-      }
-    }
-    catch(e){
-      print(e);
-    }
-  }
-  void _showAdress(context){
+  // Future<void> load()async{
+  //   await place.getImages();
+  // }
+  void _showMessage(context,String message){
   showDialog(
     context: context,
     builder: (context) {
+      final dialogHeight = MediaQuery.of(context).size.height * 0.05;
       return AlertDialog(
-        title: Text('$placeName'),
-        content: Text('$placeAdress'),
+        title: Text('${place.name}'),
+        content: Container(
+          height: dialogHeight,
+          child: Column(
+            children: [
+          
+              Text('$message'),
+            ],
+          ),
+        ),
         
         actions: <Widget>[
           TextButton(
@@ -103,8 +91,8 @@ class _PlaceItemState extends State<PlaceItem> {
             height: 10,
           ),
          
-          if(imageURL !='')
-            Image.network(imageURL, height: 70,)
+          if(place.imagesUrls.isNotEmpty) 
+            Image.network(place.imagesUrls[0], height: 70,)
           else
             widget.img,
          
@@ -114,7 +102,7 @@ class _PlaceItemState extends State<PlaceItem> {
               softWrap: false,
               maxLines: 1,
               text: TextSpan(
-                text: placeName,
+                text: place.name,
                 style: const TextStyle(
                   color: Color(0xff222222)
                 ),
@@ -129,17 +117,22 @@ class _PlaceItemState extends State<PlaceItem> {
                 tooltip: 'Показать 3D панораму',
                 onPressed: () {
                   //setState(){};
-                  Navigator.push(
-                    context, 
-                    MaterialPageRoute(builder: (context) => PanoramViewScreen(panUrl: imageURL,))
-                  );
+                  if(place.imagesUrls.isNotEmpty){  
+                    Navigator.push(
+                      context, 
+                      MaterialPageRoute(builder: (context) => PanoramViewScreen(panUrl: place.imagesUrls[0],))
+                    );
+                  }
+                  else{
+                    _showMessage(context, 'Не удалось найти панораму');
+                  }
                 },
               ),
               IconButton(
                 icon: Icon(Icons.remove_red_eye),
                 tooltip: 'Посмотреть подробности',
                 onPressed: () {
-                  _showAdress(context);
+                  _showMessage(context, place.address);
                 },
               ),
               IconButton(
@@ -156,11 +149,9 @@ class _PlaceItemState extends State<PlaceItem> {
 }
 
 
-
-
 class PlacesGrid extends StatefulWidget {
   String name=''; 
-  List <dynamic>? ps;
+  List<dynamic>? ps;
 
   PlacesGrid({required this.name}); 
 
@@ -171,15 +162,34 @@ class PlacesGrid extends StatefulWidget {
 }
 
 class _PlacesGridState extends State<PlacesGrid> {
+  List<Place> places = [];
+  bool loading = false;
+  @override
+  void initState() {
+    super.initState();
+    // Загружаем данные и создаем объекты Place только после полной загрузки данных
+    loadPlaces();
+  }
+
+  void loadPlaces() async {
+    loading = true;
+    List<Place> loadedPlaces = [];
+    for (var placeData in widget.ps!) {
+      Place place = Place(place: placeData);
+      try{
+        await place.getImages().timeout(const Duration(seconds: 1));
+      }
+      catch(e){}
+      loadedPlaces.add(place);
+      setState(() {
+        places = loadedPlaces;
+      });
+    }
+    loading = false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    int itemCount;
-    if (widget.ps != null && widget.ps!.isNotEmpty) {
-      itemCount = widget.ps!.length;
-    } else {
-      itemCount = 60;
-    }
-
     return Container(
       constraints: const BoxConstraints(
         maxWidth: 600
@@ -192,23 +202,32 @@ class _PlacesGridState extends State<PlacesGrid> {
           crossAxisSpacing: 10.0,
         ),
         itemBuilder: (BuildContext context, int index) {
-          try{
-            //return PlaceInfoWidget(place: widget.ps![index]);
-            return PlaceItem(p: widget.ps![index]);
+          if (index < places.length) {
+            return PlaceItem(p: places[index]);
+          } else {
+            return const Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: CircularProgressIndicator()), 
+                Text(
+                  'Загрузка...', 
+                  style: TextStyle(
+                    fontSize: 16, 
+                    color: Colors.black, 
+                  ),
+                ),
+              ],
+            );
           }
-          catch(e){
-            print('AAAAAAAAAAAAAAAAAAAAAAAA $e \n ${widget.ps![index]}');
-            // return PlaceItem(widget.name);
-          }
-          
         },
-        itemCount: itemCount,
+        itemCount: places.length + (loading ? 1 : 0), // Учитываем индикатор загрузки
       ),
     );
   }
 }
-
-
 
 
 
