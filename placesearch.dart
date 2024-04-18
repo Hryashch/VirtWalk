@@ -23,14 +23,6 @@ class Place {
     name = place.containsKey('name') ? place['name'] : '';
     address = place.containsKey('formatted_address') ? place['formatted_address'] : '';
     id = place.containsKey('place_id') ? place['place_id'] : '';
-
-    // try{
-    //   getImages();
-    // }
-    // catch(e){
-    //   print(e);
-    // }
-    
   }
   
   Future<void> getImages() async {
@@ -50,42 +42,33 @@ class Place {
 }
 
 
-// Функция для получения информации о местах через Places API
-Future<List<Map<String, dynamic>>> searchPlaces(String query) async {
-  // Замените YOUR_API_KEY на ваш ключ API
-  String url = 'https://maps.googleapis.com/maps/api/place/textsearch/json?query=$query&key=$apiKey';
+// Future<List<Map<String, dynamic>>> searchPlaces(String query) async {
+//   String url = 'https://maps.googleapis.com/maps/api/place/textsearch/json?query=$query&key=$apiKey';
   
-  // Отправляем запрос к Places API
-  http.Response response = await http.get(Uri.parse(url));
+//   http.Response response = await http.get(Uri.parse(url));
+//   Map<String, dynamic> data = json.decode(response.body);
+//   List<dynamic> results = data['results'];
+//   return results.cast<Map<String, dynamic>>();
+// }
+Future<List<Map<String, dynamic>>> searchPlaces(String query, {String? nextPageToken}) async {
+  String url = 'https://maps.googleapis.com/maps/api/place/textsearch/json?query=$query&key=$apiKey';
+  if (nextPageToken != null) {
+    url += '&pagetoken=$nextPageToken';
+  }
 
-  // Парсим ответ
+  http.Response response = await http.get(Uri.parse(url));
   Map<String, dynamic> data = json.decode(response.body);
   List<dynamic> results = data['results'];
 
-  // Возвращаем массив с информацией о местах
+  // if (data.containsKey('next_page_token')) {
+  //   String nextPageToken = data['next_page_token'];
+  //   // Ждём некоторое время, чтобы Google обработал запрос и получил следующую страницу
+  //   await Future.delayed(Duration(seconds: 2));
+  //   // Рекурсивно вызываем searchPlaces для получения следующей страницы результатов
+  //   List<Map<String, dynamic>> nextPageResults = await searchPlaces(query, nextPageToken: nextPageToken);
+  //   // Добавляем результаты из следующей страницы к общему списку результатов
+  //   results.addAll(nextPageResults);
+  // }
+
   return results.cast<Map<String, dynamic>>();
 }
-
-// // Функция для получения массива изображений места
-// Future<List<String>> getPlaceImages(String placeId) async {
-//   // Замените YOUR_API_KEY на ваш ключ API
-//   String url = 'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=photos&key=$apiKey';
-
-//   // Отправляем запрос к Places API
-//   http.Response response = await http.get(Uri.parse(url));
-
-//   // Парсим ответ
-//   Map<String, dynamic> data = json.decode(response.body);
-//   List<dynamic> photos = data['result']['photos'];
-
-//   // Формируем массив ссылок на изображения
-//   List<String> imageUrls = [];
-//   for (var photo in photos) {
-//     String photoReference = photo['photo_reference'];
-//     String photoUrl = 'https://maps.googleapis.com/maps/api/place/photo?maxheight=1000&photoreference=$photoReference&key=$apiKey';
-//     imageUrls.add(photoUrl);
-//   }
-//   print(imageUrls.toString());
-//   return imageUrls;
-// }
-
