@@ -6,7 +6,7 @@ import 'testgoogleview.dart';
 
 
 import 'dart:math';
-//
+//## wtf
 
 const places = ['набережная с пальмами',
   'узкая европейская улица',
