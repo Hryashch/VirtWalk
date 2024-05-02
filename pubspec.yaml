@@ -33,7 +33,7 @@ dependencies:
   #panorama: ^0.4.1
   panorama_viewer: ^1.0.3
   http: ^1.2.1
-  flutter_google_places_sdk: ^0.3.7
+  # flutter_google_places_sdk: ^0.3.7
   google_maps_apis: ^1.0.1+1
 
   # The following adds the Cupertino Icons font to your application.
