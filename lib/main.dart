@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 import 'placesearch.dart';    
 import 'placeitem.dart';
-import 'testgoogleview.dart';
+// import 'testgoogleview.dart';
 
 
 import 'dart:math';
-//## wtf
+//## 
 
 const places = ['набережная с пальмами',
   'узкая европейская улица',
@@ -24,7 +25,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: false, 
+      // darkTheme: ThemeData.dark(),
       home: HomePage(),
     );
   }
@@ -53,6 +55,7 @@ class _HomePageState extends State<HomePage> {
   void updateColor() {
     setState(() {
       cTheme = getRandomColor(); 
+      // Theme.of(context).colorScheme.primary = cTheme;
     });
   }
   void _onSearchSubmitted() async {
@@ -76,111 +79,150 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [
+              Theme.of(context).colorScheme.secondary.withOpacity(0.4),
+              // Theme.of(context).colorScheme.primary,
+              cTheme
+            ])
+          ),
+        ),
         title: Center(
           child: Container(
             margin: const EdgeInsets.only(left: 40),
             child: Text('VirtWalker'),
             )
           ),
-        backgroundColor: cTheme.withAlpha(240),
+        // backgroundColor: cTheme.withAlpha(240),
         actions: [
           IconButton(
             tooltip: 'Открыть настройки',
             icon: Icon(Icons.settings_outlined),
             onPressed: () {
               updateColor();
+              print(MediaQuery.sizeOf(context).width.toString());
             },
           ),
         ],
       ),
       
       body:
-      	Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if(!showGrid)Column(
-                  children: [
-                    Text(
-                      'Куда пойдем гулять сегодня? \n Введите описание места:',
-                      style: TextStyle(
-                        fontSize: 18.0,
-                        fontWeight: FontWeight.bold,
-                        color: cTheme,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 40),
-                  ],
-                ),
-                Container(
-                  constraints: const BoxConstraints( maxWidth: 500),
-                  child: TextField( 
-                    controller: _controller,
-                    decoration: InputDecoration(
-                      suffixIcon: 
-                      srch!=''?
-                        IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          setState(() {
-                            srch = "";
-                            showGrid = false;
-                            _controller.clear();
-                          });
-                        },
-                      )
-                    : null,
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [
+              // Theme.of(context).colorScheme.secondary.withOpacity(0.4),
+              Theme.of(context).colorScheme.primary.withOpacity(0.3),
+              cTheme.withOpacity(0.3)
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            )
+          ),
+          child:
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if(!showGrid)Column(
+                    children: [
+                      Text(
+                        'Куда пойдем гулять сегодня? \n Введите описание места:',
+                        style: TextStyle(
+
+                          fontSize: 25.0,
+                          shadows: [
+                            Shadow(
+                              blurRadius: 3.0,
+                              color: Colors.black,
+                              offset: Offset(1, 1)
+                            ),
+                          ],
+                          fontWeight: FontWeight.bold,
                           color: cTheme,
-                           width: 5
-                          )
                         ),
-                      hintText: srch==''?'Например, ${places[Random().nextInt(places.length)]}' : srch,
-                      border: const OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                        textAlign: TextAlign.center,
                       ),
-                    ),
-                    onChanged: (value) {
-                      srch = value;
-                    },
-                    onSubmitted: (value) {
-                      _onSearchSubmitted();
-                      
-                    },
+                      const SizedBox(height: 40),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(cTheme),
-                    elevation: MaterialStateProperty.all(0),
-                    shape: MaterialStateProperty.all(const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(30)),
-                      side: BorderSide(
-                        color: Color(0xFF000000),
-                        width: 1.5,
+                  Container(
+                    constraints: const BoxConstraints( maxWidth: 500),
+                    child: TextField( 
+                      controller: _controller,
+                      decoration: InputDecoration(
+                        suffixIcon: 
+                        srch!=''?
+                          IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            setState(() {
+                              srch = "";
+                              showGrid = false;
+                              _controller.clear();
+                            });
+                          },
+                        )
+                      : null,
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: cTheme,
+                            width: 5
+                            )
+                          ),
+                        hintText: srch==''?'Например, ${places[Random().nextInt(places.length)]}' : srch,
+                        border: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
                       ),
-                    )),
+                      onChanged: (value) {
+                        srch = value;
+                        setState(() {
+                          
+                        });
+                      },
+                      onSubmitted: (value) {
+                        _onSearchSubmitted();
+                        
+                      },
+                    ),
                   ),
-                  onPressed: () {
-                    _onSearchSubmitted();
-                  },
-                  child: RichText(
-                    text:const TextSpan(
-                      text: 'искать',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)
+                  const SizedBox(height: 20),
+                  if(!showGrid) 
+                  AnimatedOpacity(
+                    duration: Duration(milliseconds: 500),
+                    opacity: srch!='' ? 1 : 0,
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(cTheme),
+                        elevation: MaterialStateProperty.all(0),
+                        shape: MaterialStateProperty.all(const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(30)),
+                          side: BorderSide(
+                            color: Color(0xFF000000),
+                            width: 1.5,
+                          ),
+                        )),
+                      ),
+                      onPressed: () {
+                        _onSearchSubmitted();
+                      },
+                      child: RichText(
+                        text:const TextSpan(
+                          text: 'искать',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)
+                        ),
+                        ),
                     ),
-                    ),
-                ),
-                if(showGrid)
-                  Expanded(
-                    child:  PlacesGrid.fromPlace(ps: ps) ,
                   )
-              ],
+                  else
+                    Expanded(
+                      child:  PlacesGrid.fromPlace(ps: ps) ,
+                    )
+                ],
+              ),
             ),
           ),
         ),
