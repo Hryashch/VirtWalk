@@ -2,14 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:virtwalk/placesearch.dart';
 import 'panoram.dart';
+import 'placeShow.dart';
 
 class PlaceItem extends StatefulWidget {
   final Place p;
-  dynamic img = const Icon(
-      Icons.error,
-      color: Color.fromARGB(255, 255, 85, 73),
-      size: 70,
-    );
+  
 
   PlaceItem({required this.p});
 
@@ -29,50 +26,23 @@ class _PlaceItemState extends State<PlaceItem> {
       //load();
     });
   }
-  // Future<void> load()async{
-  //   await place.getImages();
+
+  // void _showMessage(context,String message){
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return PlacePopupWidget(place: place);
+  //     },
+  //   );
   // }
-  void _showMessage(context,String message){
-  showDialog(
-    context: context,
-    builder: (context) {
-      final dialogHeight = MediaQuery.of(context).size.height * 0.05;
-      return AlertDialog(
-        title: Text('${place.name}'),
-        content: Container(
-          height: dialogHeight,
-          child: Column(
-            children: [
-          
-              Text('$message'),
-            ],
-          ),
-        ),
-        
-        actions: <Widget>[
-          TextButton(
-            child: const Text('Ок'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
 
   @override
   Widget build(BuildContext context) {
+    double imgSize = MediaQuery.sizeOf(context).width > 600 ? 70 
+                : MediaQuery.sizeOf(context).width > 444 ? MediaQuery.sizeOf(context).width/10 
+                : MediaQuery.sizeOf(context).width/5;
     return Container(
-      constraints: const BoxConstraints(
-        minWidth: 200,
-        minHeight: 130,
-        maxHeight: 150,
-        maxWidth: 300
-      ),
-      // width: 130,
-      // height: 130,
+      
       margin: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.all(Radius.circular(10)),
@@ -81,68 +51,112 @@ class _PlaceItemState extends State<PlaceItem> {
             color: Colors.black.withOpacity(0.1),
             spreadRadius: 1,
             blurRadius: 1,
-            offset: const Offset(0, 1), // changes position of shadow
+            offset: const Offset(0, 1), 
           ),
         ],
       ),
       child: Column(
         children: [
-          const SizedBox(
-            height: 10,
-          ),
+          const Expanded(child: SizedBox()),
          
-          if(place.imagesUrls.isNotEmpty) 
-            Image.network(place.imagesUrls[0], height: 70,)
-          else
-            widget.img,
+            Container(
+              constraints: BoxConstraints(
+                maxHeight: imgSize,
+              ),
+              child: GestureDetector(
+                onTap: (){
+                  showMessage(context, place);
+                },
+                onLongPress: () {
+                  if (place.imagesUrls.isNotEmpty) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PanoramViewScreen(
+                              p: place, curImg: 0, mode3d: false,
+                            ),
+                          ),
+                        );
+                      } else {
+                        
+                      }
+                },
+                child:place.imagesUrls.isNotEmpty? 
+                  Image.network(place.imagesUrls[0])
+                  : Icon(
+                    Icons.error,
+                    size: imgSize,
+                    color: Colors.red,
+                  )
+                ),
+              ),
+            
          
           const Expanded(child: SizedBox()),
           Center(
             child: RichText(
               softWrap: false,
               maxLines: 1,
+              overflow: TextOverflow.fade,
               text: TextSpan(
                 text: place.name,
-                style: const TextStyle(
-                  color: Color(0xff222222)
+                
+                style: TextStyle(
+                  color: Color(0xff222222),
+                  fontSize: MediaQuery.sizeOf(context).width > 600 ? 20 : MediaQuery.sizeOf(context).width/25,
+                  
                 ),
               )
             ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              //if(place.imagesUrls.isNotEmpty)
-              IconButton(
-                icon: const Icon(Icons.threed_rotation_rounded),
-                color: (place.imagesUrls.isNotEmpty ? Colors.black : const Color.fromARGB(100, 0, 0, 0)),
-                tooltip: 'Показать 3D панораму',
-                onPressed: () {
-                  //setState(){};
-                  if(place.imagesUrls.isNotEmpty){  
-                    Navigator.push(
-                      context, 
-                      MaterialPageRoute(builder: (context) => PanoramViewScreen(panUrl: place.imagesUrls[0],))
-                    );
-                  }
-                  else{
-                    _showMessage(context, 'Не удалось найти панораму');
-                  }
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.remove_red_eye),
-                tooltip: 'Посмотреть подробности',
-                onPressed: () {
-                  _showMessage(context, place.address);
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.turned_in_outlined),
-                tooltip: 'Сохранить в закладки',
-                onPressed: () {},
-              ),
-            ],
+          if( MediaQuery.sizeOf(context).width > 510 || MediaQuery.sizeOf(context).width<440 && MediaQuery.sizeOf(context).width > 365)
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final iconSize = constraints.maxWidth / 8;
+              MainAxisAlignment alig = iconSize < 30 ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.center;
+              return Row(
+                mainAxisAlignment: alig,
+                children: [
+                  //if(place.imagesUrls.isNotEmpty)
+                  IconButton(
+                    icon: const Icon(Icons.threed_rotation_rounded),
+                    color: place.imagesUrls.isNotEmpty
+                        ? Colors.black
+                        : const Color.fromARGB(100, 0, 0, 0),
+                    tooltip: 'Показать 3D панораму',
+                    iconSize: iconSize,
+                    onPressed: () {
+                      if (place.imagesUrls.isNotEmpty) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PanoramViewScreen(
+                              p: place, curImg: 0, mode3d: true,
+                            ),
+                          ),
+                        );
+                      } else {
+                        
+                      }
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.remove_red_eye),
+                    tooltip: 'Посмотреть подробности',
+                    iconSize: iconSize,
+                    onPressed: () {
+                      showMessage(context, place);
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.turned_in_outlined),
+                    tooltip: 'Сохранить в закладки',
+                    iconSize: iconSize,
+                    onPressed: () {},
+                  ),
+                ],
+              );
+            }
           )
         ],
         )
@@ -189,22 +203,27 @@ class _PlacesGridState extends State<PlacesGrid> {
     }
     loading = false;
   }
-
+  
   @override
   Widget build(BuildContext context) {
+    // final double plsInRow = MediaQuery.sizeOf(context).width > 600 ? 3 : 2;
     return Container(
       constraints: const BoxConstraints(
         maxWidth: 600
       ),
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(1.0),
       child: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3, 
-          mainAxisSpacing: 10.0,
-          crossAxisSpacing: 10.0,
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          // crossAxisCount: 3,
+          // crossAxisCount: plsInRow, 
+          maxCrossAxisExtent: 200,
+          // childAspectRatio: 10.5,
+          mainAxisSpacing: 5.0,
+          crossAxisSpacing: 5.0,
         ),
         itemBuilder: (BuildContext context, int index) {
           if (index < places.length) {
+            
             return PlaceItem(p: places[index]);
           } else {
             return const Stack(

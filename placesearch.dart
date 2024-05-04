@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+// import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:io';
+// import 'dart:io';
 
 // import 'package:google_maps_apis/places.dart';
 //final gplaces = GoogleMapsPlaces(apiKey: apiKey);
@@ -20,9 +20,13 @@ class Place {
   Place({
     required this.place
   }){
+    // // print(place.toString());
+    // print(place.entries.toString());
+    
     name = place.containsKey('name') ? place['name'] : '';
     address = place.containsKey('formatted_address') ? place['formatted_address'] : '';
     id = place.containsKey('place_id') ? place['place_id'] : '';
+    description = place.containsKey('formatted_phone_number') ? place['formatted_phone_number'] : 'no description';
   }
   
   Future<void> getImages() async {
@@ -58,6 +62,7 @@ Future<List<Map<String, dynamic>>> searchPlaces(String query, {String? nextPageT
 
   http.Response response = await http.get(Uri.parse(url));
   Map<String, dynamic> data = json.decode(response.body);
+  // print(data.keys);
   List<dynamic> results = data['results'];
 
   // if (data.containsKey('next_page_token')) {
