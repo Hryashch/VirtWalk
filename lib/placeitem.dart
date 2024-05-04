@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:virtwalk/placesearch.dart';
 import 'panoram.dart';
+import 'placeShow.dart';
 
 class PlaceItem extends StatefulWidget {
   final Place p;
@@ -25,36 +26,15 @@ class _PlaceItemState extends State<PlaceItem> {
       //load();
     });
   }
-  
-  void _showMessage(context,String message){
-  showDialog(
-    context: context,
-    builder: (context) {
-      final dialogHeight = MediaQuery.of(context).size.height * 0.05;
-      return AlertDialog(
-        title: Text('${place.name}'),
-        content: Container(
-          height: dialogHeight,
-          child: Column(
-            children: [
-          
-              Text('$message'),
-            ],
-          ),
-        ),
-        
-        actions: <Widget>[
-          TextButton(
-            child: const Text('Ок'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
+
+  // void _showMessage(context,String message){
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return PlacePopupWidget(place: place);
+  //     },
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +65,21 @@ class _PlaceItemState extends State<PlaceItem> {
               ),
               child: GestureDetector(
                 onTap: (){
-                  _showMessage(context, place.address);
+                  showMessage(context, place);
+                },
+                onLongPress: () {
+                  if (place.imagesUrls.isNotEmpty) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PanoramViewScreen(
+                              p: place, curImg: 0, mode3d: false,
+                            ),
+                          ),
+                        );
+                      } else {
+                        
+                      }
                 },
                 child:place.imagesUrls.isNotEmpty? 
                   Image.network(place.imagesUrls[0])
@@ -137,12 +131,12 @@ class _PlaceItemState extends State<PlaceItem> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => PanoramViewScreen(
-                              panUrl: place.imagesUrls[0],
+                              p: place, curImg: 0, mode3d: true,
                             ),
                           ),
                         );
                       } else {
-                        _showMessage(context, 'Не удалось найти панораму');
+                        
                       }
                     },
                   ),
@@ -151,7 +145,7 @@ class _PlaceItemState extends State<PlaceItem> {
                     tooltip: 'Посмотреть подробности',
                     iconSize: iconSize,
                     onPressed: () {
-                      _showMessage(context, place.address);
+                      showMessage(context, place);
                     },
                   ),
                   IconButton(

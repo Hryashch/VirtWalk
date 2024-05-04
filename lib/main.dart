@@ -7,7 +7,19 @@ import 'placeitem.dart';
 
 
 import 'dart:math';
-//## 
+/*
+          идеи
+
+  1 для плейсайтемов брать не размер экрана а размер плейсайтема(этовозможно?!??!?!)
+  2 загружать фото асинхронно по созданию плейса
+  3 поиск соседних мест по заготовленным запросам
+  4 нулевая фотка - панорама с улицы
+  5 копирование в буфер обмена адреса и названия по клику
+
+  15 закладки
+  ...
+
+*/
 
 const places = ['набережная с пальмами',
   'узкая европейская улица',
@@ -26,6 +38,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false, 
+      // theme: ThemeData(),
       // darkTheme: ThemeData.dark(),
       home: HomePage(),
     );
@@ -101,7 +114,6 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.settings_outlined),
             onPressed: () {
               updateColor();
-              print(MediaQuery.sizeOf(context).width.toString());
             },
           ),
         ],
