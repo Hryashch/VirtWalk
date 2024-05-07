@@ -28,7 +28,7 @@ class PanoramViewScreenState extends State<PanoramViewScreen> {
   late Image pic;
   late dynamic widShow;
 
-  late PanoramaViewer pan;
+  // late PanoramaViewer pan;
   @override
   void initState() {
     curImg = widget.curImg;
@@ -45,12 +45,22 @@ class PanoramViewScreenState extends State<PanoramViewScreen> {
     super.dispose();
   }
   void updateStuff(){
-    pic = Image.network(
-      widget.p.imagesUrls[curImg],
+    double? xStart;
+    double? xEnd;
+    ImageProvider<Object> imageProvider = widget.p.imgs[curImg].image; 
+    pic = Image(
+      image:imageProvider,
       fit: BoxFit.contain,
-      // fit: BoxFit.cover,  
+    
     );
+    // pic = Image.network(
+    //   widget.p.imagesUrls[curImg],
+    //   fit: BoxFit.contain,
+    //   // fit: BoxFit.cover,  
+    // );
     widShow = mode3d? PanoramaViewer(
+      sensitivity: 3,
+      animSpeed: 1,
       child: pic,  
     ) : 
     Stack(
@@ -59,7 +69,8 @@ class PanoramViewScreenState extends State<PanoramViewScreen> {
         Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: NetworkImage(widget.p.imagesUrls[curImg]),
+              // image: NetworkImage(widget.p.imagesUrls[0]),
+              image: imageProvider,
               fit:  BoxFit.cover
             )
           ),
@@ -73,7 +84,47 @@ class PanoramViewScreenState extends State<PanoramViewScreen> {
             color: Colors.black.withOpacity(0.5), 
           ),
         ),
-        pic
+        // pic
+        GestureDetector(
+          child: pic,
+          onDoubleTap: () {
+            mode3d = !mode3d;
+            updateStuff();
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PanoramViewScreen(
+                  p: widget.p, curImg: curImg, mode3d: true,
+                ),
+              ),
+            );
+          },
+          onHorizontalDragStart: (details) {
+            xStart = details.globalPosition.dx;
+          },
+          onHorizontalDragUpdate: (details) {
+            xEnd = details.globalPosition.dx;
+          },
+          onHorizontalDragEnd: (details) {
+            try{if((xEnd! - xStart!).abs()>30){
+              if(xEnd! - xStart! > 0){
+                curImg--;
+                if(curImg <= -1){
+                  curImg = widget.p.imgs.length-1;
+                }
+              }else{
+                curImg++;
+                if(curImg >= widget.p.imgs.length){
+                  curImg = 0;
+                }
+              }
+              updateStuff();
+            }}
+            catch(e){
+              // print(e);
+            }
+          },
+        )
       ],
     )
     ;
@@ -92,8 +143,8 @@ class PanoramViewScreenState extends State<PanoramViewScreen> {
             Navigator.pop(context);
           },
         ),
-        title: const Center(
-          child: Text('VirtWalker')
+        title: Center(
+          child: Text(widget.p.name)
           ),
         backgroundColor: cTheme.withAlpha(240),
         actions: [
@@ -126,7 +177,8 @@ class PanoramViewScreenState extends State<PanoramViewScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   IconButton(
-                    icon: Icon(mode3d ?  Icons.image : Icons.threed_rotation_rounded ),
+                    color: Colors.black,
+                    icon: Icon(mode3d ?  Icons.image : Icons.threed_rotation ),
                     tooltip: 'переключить режим',
                     onPressed: () {
                       mode3d = !mode3d;
@@ -145,14 +197,6 @@ class PanoramViewScreenState extends State<PanoramViewScreen> {
                     },
                   ),
                   IconButton(
-                    color: Colors.black,
-                    icon: const Icon(Icons.remove_red_eye_sharp),
-                    tooltip: 'Больше информации',
-                    onPressed: () {
-                      showMessage(context, widget.p);
-                    },
-                  ),
-                  IconButton(
                     tooltip: 'Cохранить в закладки',
                     color: Colors.black,
                     onPressed: (){
@@ -161,24 +205,37 @@ class PanoramViewScreenState extends State<PanoramViewScreen> {
                     icon: const Icon(Icons.turned_in_outlined),
                   ),
                   IconButton(
+                    color: Colors.black,
+                    iconSize: 30,
+                    icon: const Icon(Icons.remove_red_eye),
+                    tooltip: 'Больше информации',
+                    onPressed: () {
+                      showMessage(context, widget.p);
+                    },
+                  ),
+                  if(widget.p.imgs.length > 1)  
+                  IconButton(
+                    color: Colors.black,
                     onPressed: (){
                       curImg --;
                       if(curImg <=-1){
-                        curImg = widget.p.imagesUrls.length-1;
+                        curImg = widget.p.imgs.length-1;
                       }
                       updateStuff();
                     },
-                    icon: Icon(Icons.arrow_circle_left_outlined)
+                    icon: Icon(Icons.arrow_circle_left)
                   ),
+                  if(widget.p.imgs.length > 1)
                   IconButton(
+                    color: Colors.black,
                     onPressed: (){
                       curImg ++;
-                      if(curImg >= widget.p.imagesUrls.length){
+                      if(curImg >= widget.p.imgs.length){
                         curImg = 0;
                       }
                       updateStuff();
                     },
-                    icon: Icon(Icons.arrow_circle_right_outlined),
+                    icon: Icon(Icons.arrow_circle_right),
                     )    
                 ],
               ),
@@ -189,3 +246,9 @@ class PanoramViewScreenState extends State<PanoramViewScreen> {
     );
   }
 }
+
+
+
+
+
+

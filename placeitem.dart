@@ -43,7 +43,7 @@ class _PlaceItemState extends State<PlaceItem> {
                 : MediaQuery.sizeOf(context).width/5;
     return Container(
       
-      margin: const EdgeInsets.all(10),
+      margin: const EdgeInsets.all(1),
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.all(Radius.circular(10)),
         boxShadow: [
@@ -68,7 +68,7 @@ class _PlaceItemState extends State<PlaceItem> {
                   showMessage(context, place);
                 },
                 onLongPress: () {
-                  if (place.imagesUrls.isNotEmpty) {
+                  if (place.imgs.isNotEmpty) {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -83,7 +83,9 @@ class _PlaceItemState extends State<PlaceItem> {
                 },
                 child:place.imagesUrls.isNotEmpty? 
                   Image.network(place.imagesUrls[0])
-                  : Icon(
+                  :place.icon != null ?
+                  place.icon
+                  :Icon(
                     Icons.error,
                     size: imgSize,
                     color: Colors.red,
@@ -126,7 +128,7 @@ class _PlaceItemState extends State<PlaceItem> {
                     tooltip: 'Показать 3D панораму',
                     iconSize: iconSize,
                     onPressed: () {
-                      if (place.imagesUrls.isNotEmpty) {
+                      if (place.imgs.isNotEmpty) {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -194,6 +196,7 @@ class _PlacesGridState extends State<PlacesGrid> {
       Place place = Place(place: placeData);
       try{
         await place.getImages().timeout(const Duration(seconds: 3));
+        // await place.getImagesWidgets();
       }
       catch(e){}
       loadedPlaces.add(place);

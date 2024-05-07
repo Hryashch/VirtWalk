@@ -11,10 +11,7 @@ import 'dart:math';
           идеи
 
   1 для плейсайтемов брать не размер экрана а размер плейсайтема(этовозможно?!??!?!)
-  2 загружать фото асинхронно по созданию плейса
   3 поиск соседних мест по заготовленным запросам
-  4 нулевая фотка - панорама с улицы
-  5 копирование в буфер обмена адреса и названия по клику
 
   15 закладки
   ...
@@ -37,6 +34,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        primaryColor: getRandomColor(),
+        
+      ),
       debugShowCheckedModeBanner: false, 
       // theme: ThemeData(),
       // darkTheme: ThemeData.dark(),
@@ -61,7 +62,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool showGrid = false;
-  Color cTheme = Color.fromARGB(255, 83, 152, 255);
+  Color cTheme = const Color.fromARGB(255, 83, 152, 255);
   String srch = "";
   List<dynamic> ps=[];
   TextEditingController _controller = TextEditingController();
@@ -104,14 +105,14 @@ class _HomePageState extends State<HomePage> {
         title: Center(
           child: Container(
             margin: const EdgeInsets.only(left: 40),
-            child: Text('VirtWalker'),
+            child: const Text('VirtWalker'),
             )
           ),
         // backgroundColor: cTheme.withAlpha(240),
         actions: [
           IconButton(
             tooltip: 'Открыть настройки',
-            icon: Icon(Icons.settings_outlined),
+            icon: const Icon(Icons.settings_outlined),
             onPressed: () {
               updateColor();
             },
@@ -138,28 +139,24 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if(!showGrid)Column(
-                    children: [
-                      Text(
-                        'Куда пойдем гулять сегодня? \n Введите описание места:',
-                        style: TextStyle(
-
-                          fontSize: 25.0,
-                          shadows: [
-                            Shadow(
-                              blurRadius: 3.0,
-                              color: Colors.black,
-                              offset: Offset(1, 1)
-                            ),
-                          ],
-                          fontWeight: FontWeight.bold,
-                          color: cTheme,
-                        ),
-                        textAlign: TextAlign.center,
+                  if(!showGrid)
+                    Text(
+                      'Куда пойдем гулять сегодня? \n Введите описание места:',
+                      style: TextStyle(
+                        fontSize: 25.0,
+                        shadows: const [
+                          Shadow(
+                            blurRadius: 3.0,
+                            color: Colors.black,
+                            offset: Offset(1, 1)
+                          ),
+                        ],
+                        fontWeight: FontWeight.bold,
+                        color: cTheme,
                       ),
-                      const SizedBox(height: 40),
-                    ],
-                  ),
+                      textAlign: TextAlign.center,
+                    ),
+                  const SizedBox(height: 40),
                   Container(
                     constraints: const BoxConstraints( maxWidth: 500),
                     child: TextField( 
@@ -197,14 +194,13 @@ class _HomePageState extends State<HomePage> {
                       },
                       onSubmitted: (value) {
                         _onSearchSubmitted();
-                        
                       },
                     ),
                   ),
                   const SizedBox(height: 20),
                   if(!showGrid) 
                   AnimatedOpacity(
-                    duration: Duration(milliseconds: 500),
+                    duration: const Duration(milliseconds: 500),
                     opacity: srch!='' ? 1 : 0,
                     child: ElevatedButton(
                       style: ButtonStyle(

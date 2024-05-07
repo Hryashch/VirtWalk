@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'placesearch.dart';    
 import 'panoram.dart';
 
+import 'package:flutter/services.dart';
+
 void showMessage(context,Place place){
   showDialog(
     context: context,
@@ -35,9 +37,9 @@ class PlacePopupWidget extends StatelessWidget {
             top: 10,
             right: 10,
             child: IconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.close,
-                color: const Color.fromARGB(255, 34, 0, 0),
+                color: Color.fromARGB(255, 34, 0, 0),
               ),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -75,12 +77,14 @@ class PlacePopupWidget extends StatelessWidget {
                 ),
               ),
             ),
+            if(place.imgs.isNotEmpty) 
             SizedBox(
               height: MediaQuery.of(context).size.width>500 ? MediaQuery.of(context).size.height* 0.2 : MediaQuery.of(context).size.height* 0.15,
               // width: place.imagesUrls.length * 200,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: place.imagesUrls.length,
+                // itemCount: place.imagesUrls.length,
+                itemCount: place.imgs.length,
                 itemBuilder: (context, index) {
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -102,31 +106,41 @@ class PlacePopupWidget extends StatelessWidget {
                           ),
                         );
                         },
-                        child: Image.network(
-                          place.imagesUrls[index],
-                          fit: BoxFit.cover,
-                        ),
+                        // child: Image.network(
+                        //   place.imagesUrls[index],
+                        //   fit: BoxFit.cover,
+                        // ),
+                        child: place.imgs[index],
                       ),
                     ),
                   );
                 },
               ),
             ),
+            // Padding(
+            //   padding: const EdgeInsets.all(20.0),
+            //   child: Text(
+            //     place.description,
+            //     style: TextStyle(
+            //       fontSize: 16.0,
+            //     ),
+            //   ),
+            // ),
             Padding(
               padding: const EdgeInsets.all(20.0),
-              child: Text(
-                place.description,
-                style: TextStyle(
-                  fontSize: 16.0,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Text(
-                place.address,
-                style: TextStyle(
-                  fontSize: 16.0,
+              child: GestureDetector(
+                
+                onLongPress: () {
+                  Clipboard.setData(ClipboardData(text: place.address));
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text('Адрес скопирован в буфер обмена'),
+                  ));
+                },
+                child: Text(
+                  place.address,
+                  style: TextStyle(
+                    fontSize: 16.0,
+                  ),
                 ),
               ),
             ),
