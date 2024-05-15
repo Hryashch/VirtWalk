@@ -1,29 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
+import 'globals.dart';
 import 'placesearch.dart';    
 import 'placeitem.dart';
-// import 'testgoogleview.dart';
 
+import 'package:google_fonts/google_fonts.dart';
+import 'savedplacespage.dart';
 
 import 'dart:math';
-/*
-          идеи
 
-  1 для плейсайтемов брать не размер экрана а размер плейсайтема(этовозможно?!??!?!)
-  3 поиск соседних мест по заготовленным запросам
-
-  15 закладки
-  ...
-
-*/
 
 const places = ['набережная с пальмами',
-  'узкая европейская улица',
-  'средневековый замок',
-  'горный перевал',
-  'Эмпайр стейт',
-  'Красная площадь'
+  'кафе с верандой',
+  'пустыня в африке',
+  'горнолыжный курорт',
+  'торговый центр',
+  'японский парк'
 ];
 
 void main() {
@@ -35,12 +27,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        primaryColor: getRandomColor(),
-        
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color.fromARGB(255, 248, 112, 184),
+          brightness: Brightness.light,
+          primary: Color.fromARGB(255, 241, 90, 79),
+          secondary: const Color.fromARGB(255, 250, 195, 224),
+          // seedColor: Color(0xFF8F40)
+           
+        )
       ),
       debugShowCheckedModeBanner: false, 
-      // theme: ThemeData(),
-      // darkTheme: ThemeData.dark(),
       home: HomePage(),
     );
   }
@@ -62,16 +58,10 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool showGrid = false;
-  Color cTheme = const Color.fromARGB(255, 83, 152, 255);
   String srch = "";
   List<dynamic> ps=[];
   TextEditingController _controller = TextEditingController();
-  void updateColor() {
-    setState(() {
-      cTheme = getRandomColor(); 
-      // Theme.of(context).colorScheme.primary = cTheme;
-    });
-  }
+  
   void _onSearchSubmitted() async {
     setState(() {
       showGrid = false;
@@ -95,26 +85,29 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         flexibleSpace: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [
-              Theme.of(context).colorScheme.secondary.withOpacity(0.4),
-              // Theme.of(context).colorScheme.primary,
-              cTheme
-            ])
-          ),
-        ),
-        title: Center(
-          child: Container(
-            margin: const EdgeInsets.only(left: 40),
-            child: const Text('VirtWalker'),
+            gradient: LinearGradient(colors: gradColors.sublist(2),
             )
           ),
-        // backgroundColor: cTheme.withAlpha(240),
+        ),
+        title: const FancyTextWidget(text: 'Поиск мест') ,
+        centerTitle: true,
         actions: [
+          IconButton(
+            tooltip: 'Открыть закладки',
+            icon: const Icon(Icons.turned_in_not_outlined),
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BookmarksPage(),
+                ),
+              );
+            },
+          ),
           IconButton(
             tooltip: 'Открыть настройки',
             icon: const Icon(Icons.settings_outlined),
             onPressed: () {
-              updateColor();
             },
           ),
         ],
@@ -123,13 +116,10 @@ class _HomePageState extends State<HomePage> {
       body:
         Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [
-              // Theme.of(context).colorScheme.secondary.withOpacity(0.4),
-              Theme.of(context).colorScheme.primary.withOpacity(0.3),
-              cTheme.withOpacity(0.3)
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            gradient: LinearGradient(colors: gradColors,
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
+            
             )
           ),
           child:
@@ -140,22 +130,8 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if(!showGrid)
-                    Text(
-                      'Куда пойдем гулять сегодня? \n Введите описание места:',
-                      style: TextStyle(
-                        fontSize: 25.0,
-                        shadows: const [
-                          Shadow(
-                            blurRadius: 3.0,
-                            color: Colors.black,
-                            offset: Offset(1, 1)
-                          ),
-                        ],
-                        fontWeight: FontWeight.bold,
-                        color: cTheme,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                    FancyTextWidget(text: 'Куда пойдем гулять сегодня?\nВведите описание места'),
+                  if(!showGrid)  
                   const SizedBox(height: 40),
                   Container(
                     constraints: const BoxConstraints( maxWidth: 500),
@@ -177,7 +153,7 @@ class _HomePageState extends State<HomePage> {
                       : null,
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: cTheme,
+                            color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
                             width: 5
                             )
                           ),
@@ -204,9 +180,9 @@ class _HomePageState extends State<HomePage> {
                     opacity: srch!='' ? 1 : 0,
                     child: ElevatedButton(
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(cTheme),
-                        elevation: MaterialStateProperty.all(0),
-                        shape: MaterialStateProperty.all(const RoundedRectangleBorder(
+                        backgroundColor: WidgetStateProperty.all(Theme.of(context).colorScheme.primary),
+                        elevation: WidgetStateProperty.all(0),
+                        shape: WidgetStateProperty.all(const RoundedRectangleBorder(
                           borderRadius: BorderRadius.all(Radius.circular(30)),
                           side: BorderSide(
                             color: Color(0xFF000000),
@@ -226,9 +202,30 @@ class _HomePageState extends State<HomePage> {
                     ),
                   )
                   else
-                    Expanded(
-                      child:  PlacesGrid.fromPlace(ps: ps) ,
-                    )
+                    if(ps.isNotEmpty)
+                      Expanded(
+                        child:  PlacesGrid.fromPlace(ps: ps) ,
+                      )
+                    else 
+                      Column(
+                        children: [
+                          RichText(
+                            text:const TextSpan(
+                              text: 'нет результатов поиска',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold, 
+                                fontSize: 18, 
+                                letterSpacing: 1,
+                                color: Colors.black,   
+                              )
+                            ),
+                          ),
+                          const Icon(
+                            Icons.sentiment_dissatisfied_outlined,
+                            size: 50,
+                            )
+                        ],
+                      ),
                 ],
               ),
             ),

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:virtwalk/placesearch.dart';
 import 'panoram.dart';
 import 'placeShow.dart';
-
+import 'globals.dart';
 class PlaceItem extends StatefulWidget {
   final Place p;
   
@@ -26,152 +26,184 @@ class _PlaceItemState extends State<PlaceItem> {
       //load();
     });
   }
-
-  // void _showMessage(context,String message){
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return PlacePopupWidget(place: place);
-  //     },
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
-    double imgSize = MediaQuery.sizeOf(context).width > 600 ? 70 
-                : MediaQuery.sizeOf(context).width > 444 ? MediaQuery.sizeOf(context).width/10 
-                : MediaQuery.sizeOf(context).width/5;
-    return Container(
-      
-      margin: const EdgeInsets.all(1),
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 1,
-            offset: const Offset(0, 1), 
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          const Expanded(child: SizedBox()),
-         
-            Container(
-              constraints: BoxConstraints(
-                maxHeight: imgSize,
-              ),
-              child: GestureDetector(
-                onTap: (){
-                  showMessage(context, place);
-                },
-                onLongPress: () {
-                  if (place.imgs.isNotEmpty) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PanoramViewScreen(
-                              p: place, curImg: 0, mode3d: false,
-                            ),
+    
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Используйте constraints для доступа к размерам вашего виджета
+        double width = constraints.maxWidth;
+        double height = constraints.maxHeight;
+        double imgSize = width *0.5;
+      return Container( 
+        margin: const EdgeInsets.all(1),
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 1,
+              offset: const Offset(0, 1), 
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            const Expanded(child: SizedBox()),
+            
+              Container(
+                constraints: BoxConstraints(
+                  maxHeight: imgSize,
+                ),
+                child: GestureDetector(
+                  onTap: (){
+                    showMessage(context, place);
+                  },
+                  onLongPress: () {
+                    if (place.imgs.isNotEmpty) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PanoramViewScreen(
+                            p: place, curImg: 0, mode3d: false,
                           ),
-                        );
-                      } else {
-                        
-                      }
+                        ),
+                      );
+                    } else {
+                      
+                    }
+                  },
+                  child:place.imagesUrls.isNotEmpty? 
+                    Image.network(place.imagesUrls[0])
+                    :place.icon ?? Icon(
+                      Icons.error,
+                      size: imgSize,
+                      color: Colors.red,
+                    )
+                  ),
+                ),
+              
+            
+            const Expanded(child: SizedBox()),
+            Center(
+              child: GestureDetector(
+                onTap: () {
+                  print(width);
+                  print(height);
                 },
-                child:place.imagesUrls.isNotEmpty? 
-                  Image.network(place.imagesUrls[0])
-                  :place.icon != null ?
-                  place.icon
-                  :Icon(
-                    Icons.error,
-                    size: imgSize,
-                    color: Colors.red,
+
+                child: RichText(
+                  softWrap: false,
+                  maxLines: 1,
+                  overflow: TextOverflow.fade,
+                  text: TextSpan(
+                    text: place.name,
+                    
+                    style: TextStyle(
+                      color: Color(0xff222222),
+                      fontSize: width *0.1,
+                      
+                    ),
                   )
                 ),
               ),
-            
-         
-          const Expanded(child: SizedBox()),
-          Center(
-            child: RichText(
-              softWrap: false,
-              maxLines: 1,
-              overflow: TextOverflow.fade,
-              text: TextSpan(
-                text: place.name,
-                
-                style: TextStyle(
-                  color: Color(0xff222222),
-                  fontSize: MediaQuery.sizeOf(context).width > 600 ? 20 : MediaQuery.sizeOf(context).width/25,
-                  
-                ),
-              )
             ),
-          ),
-          if( MediaQuery.sizeOf(context).width > 510 || MediaQuery.sizeOf(context).width<440 && MediaQuery.sizeOf(context).width > 365)
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final iconSize = constraints.maxWidth / 8;
-              MainAxisAlignment alig = iconSize < 30 ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.center;
-              return Row(
-                mainAxisAlignment: alig,
-                children: [
-                  //if(place.imagesUrls.isNotEmpty)
-                  IconButton(
-                    icon: const Icon(Icons.threed_rotation_rounded),
-                    color: place.imagesUrls.isNotEmpty
-                        ? Colors.black
-                        : const Color.fromARGB(100, 0, 0, 0),
-                    tooltip: 'Показать 3D панораму',
-                    iconSize: iconSize,
-                    onPressed: () {
-                      if (place.imgs.isNotEmpty) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PanoramViewScreen(
-                              p: place, curImg: 0, mode3d: true,
-                            ),
-                          ),
-                        );
-                      } else {
+            // if( MediaQuery.sizeOf(context).width > 510 || MediaQuery.sizeOf(context).width<440 && MediaQuery.sizeOf(context).width > 365)
+            LayoutBuilder(
+              builder: (context, constraints) {
+                double iconSize = width * 0.13;
+                double butSize = width * 0.21;
+                // MainAxisAlignment alig = iconSize < 30 ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.center;
+                return Row(
+                  // mainAxisAlignment: alig,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  // mainAxisSize: MainAxisSize.min,
+                  children: [
+                    //if(place.imagesUrls.isNotEmpty)
+                    SizedBox(
+                      width: butSize,
+                      height: butSize,
+                      child: IconButton(
                         
-                      }
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.remove_red_eye),
-                    tooltip: 'Посмотреть подробности',
-                    iconSize: iconSize,
-                    onPressed: () {
-                      showMessage(context, place);
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.turned_in_outlined),
-                    tooltip: 'Сохранить в закладки',
-                    iconSize: iconSize,
-                    onPressed: () {},
-                  ),
-                ],
-              );
-            }
+                        icon: const Icon(Icons.threed_rotation_rounded),
+                        color: place.imagesUrls.isNotEmpty
+                            ? Colors.black
+                            : const Color.fromARGB(100, 0, 0, 0),
+                        tooltip: 'Показать 3D панораму',
+                        iconSize: iconSize,
+                        onPressed: () {
+                          if (place.imgs.isNotEmpty) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PanoramViewScreen(
+                                  p: place, curImg: 0, mode3d: true,
+                                ),
+                              ),
+                            );
+                          } else {
+                            
+                          }
+                        },
+                      ),
+                    ),
+                    SizedBox(
+                      width: butSize,
+                      height: butSize,
+                      child: IconButton(
+                        icon: const Icon(Icons.remove_red_eye),
+                        tooltip: 'Посмотреть подробности',
+                        iconSize: iconSize,
+                        onPressed: () {
+                          showMessage(context, place);
+                        },
+                      ),
+                    ),
+                    !alreadySaved(place.id) ?
+                    SizedBox(
+                      width: butSize,
+                      height: butSize,
+                      child: IconButton(
+                        icon: const Icon(Icons.turned_in_outlined),
+                        tooltip: 'Сохранить в закладки',
+                        iconSize: iconSize,
+                        onPressed: () async {
+                          await bookmarkService.addBookmark(place.place);
+                          setState(() {
+                          });
+                        },
+                      ),
+                    )
+                    :SizedBox(
+                      width: butSize,
+                      height: butSize,
+                      child: IconButton(
+                        icon: const Icon(Icons.bookmark_remove),
+                        tooltip: 'Удалить из закладок',
+                        iconSize: iconSize,
+                        onPressed: () async {
+                          await bookmarkService.removeBookmark(place.place);
+                          setState(() {
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              }
+            )
+          ],
           )
-        ],
-        )
+        );
+      }
     );
   }
 }
 
 
 class PlacesGrid extends StatefulWidget {
-  String name=''; 
   List<dynamic>? ps;
-
-  PlacesGrid({required this.name}); 
 
   PlacesGrid.fromPlace({required this.ps});
 

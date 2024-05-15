@@ -35,7 +35,6 @@ Future<Image> mergeImages(List<String> imageUrls) async {
     Uint8List pngBytes = byteData.buffer.asUint8List();
     return Image.memory(pngBytes);
   } else {
-    // Handle error if conversion to ByteData fails
     throw Exception('Failed to convert canvas to image bytes');
   }
 

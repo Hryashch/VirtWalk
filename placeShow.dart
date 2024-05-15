@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'placesearch.dart';    
 import 'panoram.dart';
 
 import 'package:flutter/services.dart';
-
+import 'globals.dart';
 void showMessage(context,Place place){
   showDialog(
     context: context,
@@ -22,6 +23,7 @@ class PlacePopupWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: 10),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(30.0),
       ),
@@ -30,27 +32,45 @@ class PlacePopupWidget extends StatelessWidget {
       child: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 0.2),
             child: contentBox(context),
           ),
           Positioned(
-            top: 10,
-            right: 10,
-            child: IconButton(
-              icon: const Icon(
-                Icons.close,
-                color: Color.fromARGB(255, 34, 0, 0),
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+            // top: 3,
+            right: 5,
+            child: Column(
+              children: [
+                IconButton(
+                  icon: const Icon(
+                    Icons.close,
+                    color: Color.fromARGB(255, 34, 0, 0),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                !alreadySaved(place.id) ?
+                  IconButton(
+                    icon: const Icon(Icons.turned_in_outlined),
+                    tooltip: 'Сохранить в закладки',
+                    onPressed: () async {
+                      await bookmarkService.addBookmark(place.place);
+                    },
+                  )
+                  :IconButton(
+                    icon: const Icon(Icons.bookmark_remove),
+                    tooltip: 'Удалить из закладок',
+                    onPressed: () async {
+                      await bookmarkService.removeBookmark(place.place);
+                    },
+                  ),
+              ],
             ),
           )
         ],
       ),
     );
   }
-
   Widget contentBox(BuildContext context) {
     return Container(
       constraints: BoxConstraints(
@@ -58,10 +78,12 @@ class PlacePopupWidget extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.all(Radius.circular(30)),
-        gradient: LinearGradient(colors: [
-          Color.fromARGB(255, 248, 184, 184).withOpacity(0.8),
-          const Color.fromARGB(255, 72, 85, 121).withOpacity(0.8),
-        ])
+        gradient: LinearGradient(colors: gradColors,
+        
+        end: Alignment.bottomRight,
+        begin: Alignment.topLeft,
+      
+        )
       ),
       child: SingleChildScrollView(
         child: Column(
@@ -72,18 +94,18 @@ class PlacePopupWidget extends StatelessWidget {
               child: Text(
                 place.name,
                 style: TextStyle(
-                  fontSize: 24.0,
+                  fontSize: MediaQuery.of(context).size.width>500 ? 26.0: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
+            SizedBox(height: 10,),
             if(place.imgs.isNotEmpty) 
             SizedBox(
               height: MediaQuery.of(context).size.width>500 ? MediaQuery.of(context).size.height* 0.2 : MediaQuery.of(context).size.height* 0.15,
               // width: place.imagesUrls.length * 200,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                // itemCount: place.imagesUrls.length,
                 itemCount: place.imgs.length,
                 itemBuilder: (context, index) {
                   return Padding(
@@ -106,10 +128,6 @@ class PlacePopupWidget extends StatelessWidget {
                           ),
                         );
                         },
-                        // child: Image.network(
-                        //   place.imagesUrls[index],
-                        //   fit: BoxFit.cover,
-                        // ),
                         child: place.imgs[index],
                       ),
                     ),
@@ -117,15 +135,7 @@ class PlacePopupWidget extends StatelessWidget {
                 },
               ),
             ),
-            // Padding(
-            //   padding: const EdgeInsets.all(20.0),
-            //   child: Text(
-            //     place.description,
-            //     style: TextStyle(
-            //       fontSize: 16.0,
-            //     ),
-            //   ),
-            // ),
+            
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: GestureDetector(

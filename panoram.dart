@@ -1,5 +1,5 @@
 import 'dart:ui';
-
+import 'globals.dart';
 import 'package:flutter/material.dart';
 //import 'package:panorama/panorama.dart';
 import 'package:panorama_viewer/panorama_viewer.dart';
@@ -136,6 +136,12 @@ class PanoramViewScreenState extends State<PanoramViewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: gradColors.sublist(2),
+            )
+          ),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back
           ),
@@ -168,8 +174,11 @@ class PanoramViewScreenState extends State<PanoramViewScreen> {
               constraints: const BoxConstraints(maxWidth: 300),
               height: 50,
               margin: const EdgeInsets.only(bottom: 20),
+              
               decoration: BoxDecoration(
-                color: cTheme.withAlpha(120),
+                gradient: LinearGradient(
+                  colors: gradColors.sublist(2),
+                ),
                 border: Border.all(color: Colors.black, width: 1),
                 borderRadius: BorderRadius.circular(30)     
               ),
@@ -196,13 +205,26 @@ class PanoramViewScreenState extends State<PanoramViewScreen> {
                       
                     },
                   ),
+                  !alreadySaved(widget.p.id) ?
                   IconButton(
-                    tooltip: 'Cохранить в закладки',
                     color: Colors.black,
-                    onPressed: (){
-
-                    },
                     icon: const Icon(Icons.turned_in_outlined),
+                    tooltip: 'Сохранить в закладки',
+                    onPressed: () async {
+                      await bookmarkService.addBookmark(widget.p.place);
+                      setState(() {
+                      });
+                    },
+                  )
+                  :IconButton(
+                    color: Colors.black,
+                    icon: const Icon(Icons.bookmark_remove),
+                    tooltip: 'Удалить из закладок',
+                    onPressed: () async {
+                      await bookmarkService.removeBookmark(widget.p.place);
+                      setState(() {
+                      });
+                    },
                   ),
                   IconButton(
                     color: Colors.black,
