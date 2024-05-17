@@ -17,15 +17,13 @@ class _BookmarksPageState extends State<BookmarksPage> {
   void initState() {
     super.initState();
     _loadBookmarks();
-    print('i');
   }
 
   Future<void> _loadBookmarks() async {
     try {
-      var bookmarks = await bookmarkService.getBookmarks();
+      var bookmarks = await saveService.getBookmarks();
       setState(() {
         _bookmarks = bookmarks.map((bookmark) => bookmark).toList();
-        print(_bookmarks.length);
       });
     } catch (e) {
       print(e);
@@ -52,7 +50,9 @@ class _BookmarksPageState extends State<BookmarksPage> {
         title: 
             const FancyTextWidget(text: 'Закладки') ,
         leading: IconButton(
+          color: Colors.black,
           icon: const Icon(Icons.home),
+          tooltip: 'Вернуться на страницу поиска',
           onPressed: () {
             Navigator.pushReplacement(
               context,
@@ -66,6 +66,8 @@ class _BookmarksPageState extends State<BookmarksPage> {
         centerTitle: true,
         actions: [
           IconButton(
+            color: Colors.black,
+            tooltip: 'Обновить отображаемые закладки',
             onPressed: () {
               Navigator.pushReplacement(
                 context,
@@ -134,7 +136,7 @@ class _BookmarksPageState extends State<BookmarksPage> {
                         )),
                       ),
                       onPressed: () {
-                        bookmarkService.clearBookmarks();
+                        saveService.clearBookmarks();
                         showGrid = false;
                         setState(() {
                         });

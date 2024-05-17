@@ -19,6 +19,7 @@ const places = ['набережная с пальмами',
 ];
 
 void main() {
+  saveService.loadStuff();
   runApp(MyApp());
 }
 
@@ -30,7 +31,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color.fromARGB(255, 248, 112, 184),
           brightness: Brightness.light,
-          primary: Color.fromARGB(255, 241, 90, 79),
+          primary: const Color.fromARGB(255, 241, 90, 79),
           secondary: const Color.fromARGB(255, 250, 195, 224),
           // seedColor: Color(0xFF8F40)
            
@@ -71,6 +72,9 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         showGrid = true; 
       });
+      if(ps.isNotEmpty) {
+        saveService.addPrevSrch(srch);
+      }
     }
     else {
       setState(() {
@@ -78,9 +82,106 @@ class _HomePageState extends State<HomePage> {
       });
     }
   }
+  bool showText = true;
 
   @override
   Widget build(BuildContext context) {
+    Widget WheelPrevs = 
+      Stack(
+        children: [
+          ListWheelScrollView(
+          onSelectedItemChanged: (value) {
+            showText = value < 1;
+            setState(() {
+              
+            });
+          },
+          itemExtent: 50,
+          squeeze: 0.7,
+          // useMagnifier: true,
+          // magnification: 1.1,
+          diameterRatio: 1.5,
+          // physics: AlwaysScrollableScrollPhysics(),
+          children: [
+            for (int i = prevSrchs.length-1; i >=0; i--)
+              ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(Theme.of(context).colorScheme.primary.withOpacity(0.7)),
+                  elevation: WidgetStateProperty.all(0),
+                  shape: const WidgetStatePropertyAll(RoundedRectangleBorder(
+                    side: BorderSide(
+                      color: Color(0xFF000000),
+                      width: 1,
+                    )
+                  ))
+                ),
+                onPressed: () {
+                  srch=prevSrchs[i];
+                  _onSearchSubmitted();
+                },
+                child: RichText(
+                  text: TextSpan(
+                    text: prevSrchs[i],
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if(prevSrchs.isNotEmpty) 
+          AnimatedOpacity(
+            opacity: showText ? 1 : 0,
+            duration: Duration(milliseconds: 400),
+            child: GestureDetector(
+              onTap: () {
+                print(showText);
+              },
+              child: Container(
+                alignment: Alignment.center,
+                child: Column(
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        saveService.clearPrevSrchs();
+                        setState(() {
+                          
+                        });
+                      },
+                       child: Text('очистить историю')
+                    ),
+                    FancyTextWidget(text: 'До этого Вы искали:'),
+                  ],
+                )
+              )
+            ),
+          )
+        ],
+      );
+
+
+    Widget btnSrch = ElevatedButton(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(Theme.of(context).colorScheme.primary),
+        elevation: WidgetStateProperty.all(0),
+        shape: WidgetStateProperty.all(const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(30)),
+          side: BorderSide(
+            color: Color(0xFF000000),
+            width: 1.5,
+          ),
+        )),
+        // minimumSize: WidgetStateProperty.all(Size(100, 40))
+      ),
+      onPressed: () {
+        _onSearchSubmitted();
+      },
+      child: RichText(
+        text:const TextSpan(
+          text: 'искать',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)
+        ),
+      ),
+    );
     return Scaffold(
       appBar: AppBar(
         flexibleSpace: Container(
@@ -116,9 +217,10 @@ class _HomePageState extends State<HomePage> {
       body:
         Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: gradColors,
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
+            gradient: LinearGradient(
+              colors: gradColors.map((color) => color.withOpacity(0.5)).toList(),
+              begin: Alignment.topRight,
+              end: Alignment.bottomLeft,
             
             )
           ),
@@ -130,7 +232,7 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if(!showGrid)
-                    FancyTextWidget(text: 'Куда пойдем гулять сегодня?\nВведите описание места'),
+                    const FancyTextWidget(text: 'Куда пойдем гулять сегодня?\nВведите описание места'),
                   if(!showGrid)  
                   const SizedBox(height: 40),
                   Container(
@@ -139,18 +241,22 @@ class _HomePageState extends State<HomePage> {
                       controller: _controller,
                       decoration: InputDecoration(
                         suffixIcon: 
-                        srch!=''?
-                          IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            setState(() {
-                              srch = "";
-                              showGrid = false;
-                              _controller.clear();
-                            });
-                          },
-                        )
-                      : null,
+                        // srch!=''?
+                          AnimatedOpacity(
+                            duration: const Duration(milliseconds: 700),
+                            opacity: srch!=''?1:0,
+                            child: IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                setState(() {
+                                  srch = "";
+                                  showGrid = false;
+                                  _controller.clear();
+                                });
+                              },
+                            ),
+                          ),
+                          // : null,
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
@@ -175,30 +281,29 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 20),
                   if(!showGrid) 
-                  AnimatedOpacity(
-                    duration: const Duration(milliseconds: 500),
-                    opacity: srch!='' ? 1 : 0,
-                    child: ElevatedButton(
-                      style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.all(Theme.of(context).colorScheme.primary),
-                        elevation: WidgetStateProperty.all(0),
-                        shape: WidgetStateProperty.all(const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(30)),
-                          side: BorderSide(
-                            color: Color(0xFF000000),
-                            width: 1.5,
-                          ),
-                        )),
+                  Container(
+                    alignment: Alignment.topCenter,
+                    
+                    width: MediaQuery.sizeOf(context).width*0.7,
+                    height: MediaQuery.sizeOf(context).height*0.4,
+                    constraints: const BoxConstraints(
+                      maxWidth: 600,
+                      maxHeight: 500
+                    ),
+                    child:  AnimatedCrossFade(
+                      alignment: Alignment.topCenter,
+                      firstChild: btnSrch,
+                      secondChild: Container(
+                        width: MediaQuery.sizeOf(context).width*0.7,
+                        height: MediaQuery.sizeOf(context).height*0.4,
+                        child: WheelPrevs,
                       ),
-                      onPressed: () {
-                        _onSearchSubmitted();
-                      },
-                      child: RichText(
-                        text:const TextSpan(
-                          text: 'искать',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)
-                        ),
-                        ),
+                      // secondChild: Text('sadasd'),
+                      crossFadeState: srch!=''?
+                        CrossFadeState.showFirst
+                        : CrossFadeState.showSecond,
+                      duration: const Duration(milliseconds: 1000),
+                      reverseDuration: const Duration(milliseconds:1500),
                     ),
                   )
                   else

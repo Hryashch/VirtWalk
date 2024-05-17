@@ -211,7 +211,7 @@ class PanoramViewScreenState extends State<PanoramViewScreen> {
                     icon: const Icon(Icons.turned_in_outlined),
                     tooltip: 'Сохранить в закладки',
                     onPressed: () async {
-                      await bookmarkService.addBookmark(widget.p.place);
+                      await saveService.addBookmark(widget.p.place);
                       setState(() {
                       });
                     },
@@ -221,7 +221,7 @@ class PanoramViewScreenState extends State<PanoramViewScreen> {
                     icon: const Icon(Icons.bookmark_remove),
                     tooltip: 'Удалить из закладок',
                     onPressed: () async {
-                      await bookmarkService.removeBookmark(widget.p.place);
+                      await saveService.removeBookmark(widget.p.place);
                       setState(() {
                       });
                     },
@@ -232,7 +232,11 @@ class PanoramViewScreenState extends State<PanoramViewScreen> {
                     icon: const Icon(Icons.remove_red_eye),
                     tooltip: 'Больше информации',
                     onPressed: () {
-                      showMessage(context, widget.p);
+                      showMessage(context, widget.p,(){
+                        setState(() {
+                          
+                        });
+                      });
                     },
                   ),
                   if(widget.p.imgs.length > 1)  

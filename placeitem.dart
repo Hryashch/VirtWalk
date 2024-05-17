@@ -58,7 +58,11 @@ class _PlaceItemState extends State<PlaceItem> {
                 ),
                 child: GestureDetector(
                   onTap: (){
-                    showMessage(context, place);
+                    showMessage(context, place,(){
+                      setState(() {
+                        
+                      });
+                    });
                   },
                   onLongPress: () {
                     if (place.imgs.isNotEmpty) {
@@ -88,9 +92,12 @@ class _PlaceItemState extends State<PlaceItem> {
             const Expanded(child: SizedBox()),
             Center(
               child: GestureDetector(
-                onTap: () {
-                  print(width);
-                  print(height);
+                onLongPress: () {
+                  showMessage(context, place,(){
+                    setState(() {
+                      
+                    });
+                  });
                 },
 
                 child: RichText(
@@ -109,23 +116,17 @@ class _PlaceItemState extends State<PlaceItem> {
                 ),
               ),
             ),
-            // if( MediaQuery.sizeOf(context).width > 510 || MediaQuery.sizeOf(context).width<440 && MediaQuery.sizeOf(context).width > 365)
             LayoutBuilder(
               builder: (context, constraints) {
                 double iconSize = width * 0.13;
                 double butSize = width * 0.21;
-                // MainAxisAlignment alig = iconSize < 30 ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.center;
                 return Row(
-                  // mainAxisAlignment: alig,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  // mainAxisSize: MainAxisSize.min,
                   children: [
-                    //if(place.imagesUrls.isNotEmpty)
                     SizedBox(
                       width: butSize,
                       height: butSize,
                       child: IconButton(
-                        
                         icon: const Icon(Icons.threed_rotation_rounded),
                         color: place.imagesUrls.isNotEmpty
                             ? Colors.black
@@ -141,7 +142,11 @@ class _PlaceItemState extends State<PlaceItem> {
                                   p: place, curImg: 0, mode3d: true,
                                 ),
                               ),
-                            );
+                            ).then((value) {
+                              setState(() {
+                                
+                              });
+                            },);
                           } else {
                             
                           }
@@ -156,7 +161,11 @@ class _PlaceItemState extends State<PlaceItem> {
                         tooltip: 'Посмотреть подробности',
                         iconSize: iconSize,
                         onPressed: () {
-                          showMessage(context, place);
+                          showMessage(context, place,(){
+                            setState(() {
+                              
+                            });
+                          });
                         },
                       ),
                     ),
@@ -169,7 +178,7 @@ class _PlaceItemState extends State<PlaceItem> {
                         tooltip: 'Сохранить в закладки',
                         iconSize: iconSize,
                         onPressed: () async {
-                          await bookmarkService.addBookmark(place.place);
+                          await saveService.addBookmark(place.place);
                           setState(() {
                           });
                         },
@@ -183,7 +192,7 @@ class _PlaceItemState extends State<PlaceItem> {
                         tooltip: 'Удалить из закладок',
                         iconSize: iconSize,
                         onPressed: () async {
-                          await bookmarkService.removeBookmark(place.place);
+                          await saveService.removeBookmark(place.place);
                           setState(() {
                           });
                         },
