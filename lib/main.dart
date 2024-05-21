@@ -1,35 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
+import 'globals.dart';
 import 'placesearch.dart';    
 import 'placeitem.dart';
-// import 'testgoogleview.dart';
 
+import 'savedplacespage.dart';
 
 import 'dart:math';
-/*
-          идеи
 
-  1 для плейсайтемов брать не размер экрана а размер плейсайтема(этовозможно?!??!?!)
-  2 загружать фото асинхронно по созданию плейса
-  3 поиск соседних мест по заготовленным запросам
-  4 нулевая фотка - панорама с улицы
-  5 копирование в буфер обмена адреса и названия по клику
-
-  15 закладки
-  ...
-
-*/
 
 const places = ['набережная с пальмами',
-  'узкая европейская улица',
-  'средневековый замок',
-  'горный перевал',
-  'Эмпайр стейт',
-  'Красная площадь'
+  'кафе с верандой',
+  'пустыня в африке',
+  'горнолыжный курорт',
+  'торговый центр',
+  'японский парк'
 ];
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  saveService.loadStuff();
+  
   runApp(MyApp());
 }
 
@@ -37,20 +28,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color.fromARGB(255, 248, 112, 184),
+          brightness: Brightness.light,
+          primary: const Color.fromARGB(255, 241, 90, 79),
+          secondary: const Color.fromARGB(255, 250, 195, 224),
+          // seedColor: Color(0xFF8F40)
+           
+        )
+      ),
       debugShowCheckedModeBanner: false, 
-      // theme: ThemeData(),
-      // darkTheme: ThemeData.dark(),
       home: HomePage(),
     );
   }
-}
-Color getRandomColor(){
-  Random random = new Random();
-  return Color.fromRGBO(
-    random.nextInt(155)+100,
-    random.nextInt(155)+100,
-    random.nextInt(155)+100,
-    1.0);
 }
 
 
@@ -61,16 +52,10 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool showGrid = false;
-  Color cTheme = Color.fromARGB(255, 83, 152, 255);
   String srch = "";
   List<dynamic> ps=[];
   TextEditingController _controller = TextEditingController();
-  void updateColor() {
-    setState(() {
-      cTheme = getRandomColor(); 
-      // Theme.of(context).colorScheme.primary = cTheme;
-    });
-  }
+  
   void _onSearchSubmitted() async {
     setState(() {
       showGrid = false;
@@ -80,6 +65,9 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         showGrid = true; 
       });
+      if(ps.isNotEmpty) {
+        saveService.addPrevSrch(srch);
+      }
     }
     else {
       setState(() {
@@ -87,33 +75,128 @@ class _HomePageState extends State<HomePage> {
       });
     }
   }
+  bool showText = true;
 
   @override
   Widget build(BuildContext context) {
+    Widget wheelPrevs = 
+      Stack(
+        children: [
+          ListWheelScrollView(
+          onSelectedItemChanged: (value) {
+            showText = value < 1;
+            setState(() {
+              
+            });
+          },
+          itemExtent: 50,
+          squeeze: 0.7,
+          // useMagnifier: true,
+          // magnification: 1.1,
+          diameterRatio: 1.5,
+          children: [
+            for (int i = prevSrchs.length-1; i >=0; i--)
+              ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(Theme.of(context).colorScheme.primary.withOpacity(0.7)),
+                  elevation: WidgetStateProperty.all(0),
+                  shape: const WidgetStatePropertyAll(RoundedRectangleBorder(
+                    side: BorderSide(
+                      color: Color(0xFF000000),
+                      width: 1,
+                    )
+                  ))
+                ),
+                onPressed: () {
+                  srch=prevSrchs[i];
+                  _onSearchSubmitted();
+                },
+                child: RichText(
+                  text: TextSpan(
+                    text: prevSrchs[i],
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if(prevSrchs.isNotEmpty) 
+          AnimatedOpacity(
+            opacity: showText ? 1 : 0,
+            duration: const Duration(milliseconds: 400),
+            child: Container(
+              alignment: Alignment.center,
+              child: Column(
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      saveService.clearPrevSrchs();
+                      setState(() {
+                        
+                      });
+                    },
+                      child: const Text('очистить историю')
+                  ),
+                  const FancyTextWidget(text: 'До этого Вы искали:'),
+                ],
+              )
+            
+            ),
+          )
+        ],
+      );
+
+
+    Widget btnSrch = ElevatedButton(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(Theme.of(context).colorScheme.primary),
+        elevation: WidgetStateProperty.all(0),
+        shape: WidgetStateProperty.all(const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(30)),
+          side: BorderSide(
+            color: Color(0xFF000000),
+            width: 1.5,
+          ),
+        )),
+        // minimumSize: WidgetStateProperty.all(Size(100, 40))
+      ),
+      onPressed: () {
+        _onSearchSubmitted();
+      },
+      child: RichText(
+        text:const TextSpan(
+          text: 'искать',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)
+        ),
+      ),
+    );
     return Scaffold(
       appBar: AppBar(
         flexibleSpace: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [
-              Theme.of(context).colorScheme.secondary.withOpacity(0.4),
-              // Theme.of(context).colorScheme.primary,
-              cTheme
-            ])
-          ),
-        ),
-        title: Center(
-          child: Container(
-            margin: const EdgeInsets.only(left: 40),
-            child: Text('VirtWalker'),
+            gradient: LinearGradient(colors: gradColors.sublist(2),
             )
           ),
-        // backgroundColor: cTheme.withAlpha(240),
+        ),
+        title: const FancyTextWidget(text: 'Поиск мест') ,
+        centerTitle: true,
         actions: [
           IconButton(
-            tooltip: 'Открыть настройки',
-            icon: Icon(Icons.settings_outlined),
+            tooltip: 'Открыть закладки',
+            icon: const Icon(Icons.turned_in_not_outlined),
             onPressed: () {
-              updateColor();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BookmarksPage(),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            tooltip: 'Открыть настройки',
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () {
             },
           ),
         ],
@@ -122,13 +205,11 @@ class _HomePageState extends State<HomePage> {
       body:
         Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [
-              // Theme.of(context).colorScheme.secondary.withOpacity(0.4),
-              Theme.of(context).colorScheme.primary.withOpacity(0.3),
-              cTheme.withOpacity(0.3)
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            gradient: LinearGradient(
+              colors: gradColors.map((color) => color.withOpacity(0.5)).toList(),
+              begin: Alignment.topRight,
+              end: Alignment.bottomLeft,
+            
             )
           ),
           child:
@@ -138,49 +219,35 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if(!showGrid)Column(
-                    children: [
-                      Text(
-                        'Куда пойдем гулять сегодня? \n Введите описание места:',
-                        style: TextStyle(
-
-                          fontSize: 25.0,
-                          shadows: [
-                            Shadow(
-                              blurRadius: 3.0,
-                              color: Colors.black,
-                              offset: Offset(1, 1)
-                            ),
-                          ],
-                          fontWeight: FontWeight.bold,
-                          color: cTheme,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 40),
-                    ],
-                  ),
+                  if(!showGrid)
+                    const FancyTextWidget(text: 'Куда пойдем гулять сегодня?\nВведите описание места'),
+                  if(!showGrid)  
+                  const SizedBox(height: 40),
                   Container(
                     constraints: const BoxConstraints( maxWidth: 500),
                     child: TextField( 
                       controller: _controller,
                       decoration: InputDecoration(
                         suffixIcon: 
-                        srch!=''?
-                          IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            setState(() {
-                              srch = "";
-                              showGrid = false;
-                              _controller.clear();
-                            });
-                          },
-                        )
-                      : null,
+                        // srch!=''?
+                          AnimatedOpacity(
+                            duration: const Duration(milliseconds: 700),
+                            opacity: srch!=''?1:0,
+                            child: IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                setState(() {
+                                  srch = "";
+                                  showGrid = false;
+                                  _controller.clear();
+                                });
+                              },
+                            ),
+                          ),
+                          // : null,
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: cTheme,
+                            color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
                             width: 5
                             )
                           ),
@@ -197,42 +264,72 @@ class _HomePageState extends State<HomePage> {
                       },
                       onSubmitted: (value) {
                         _onSearchSubmitted();
-                        
                       },
                     ),
                   ),
                   const SizedBox(height: 20),
                   if(!showGrid) 
-                  AnimatedOpacity(
-                    duration: Duration(milliseconds: 500),
-                    opacity: srch!='' ? 1 : 0,
-                    child: ElevatedButton(
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(cTheme),
-                        elevation: MaterialStateProperty.all(0),
-                        shape: MaterialStateProperty.all(const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(30)),
-                          side: BorderSide(
-                            color: Color(0xFF000000),
-                            width: 1.5,
-                          ),
-                        )),
-                      ),
-                      onPressed: () {
-                        _onSearchSubmitted();
+                  
+                  Container(
+                    alignment: Alignment.topCenter,
+                    
+                    width: MediaQuery.sizeOf(context).width*0.7,
+                    height: MediaQuery.sizeOf(context).height*0.4,
+                    constraints: const BoxConstraints(
+                      maxWidth: 600,
+                      maxHeight: 500
+                    ),
+                    child:  AnimatedCrossFade(
+                      alignment: Alignment.topCenter,
+                      firstChild: btnSrch,
+                      secondChild: ShaderMask(shaderCallback: (Rect bounds) {
+                        return const LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+
+                          colors: [Colors.transparent, Colors.white, Colors.white, Colors.transparent],
+                          stops: [0.0,0.1,0.7,0.9]
+                        ).createShader(bounds);
                       },
-                      child: RichText(
-                        text:const TextSpan(
-                          text: 'искать',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2)
-                        ),
-                        ),
+                      blendMode: BlendMode.dstIn,
+                      child:Container(
+                        width: MediaQuery.sizeOf(context).width*0.7,
+                        height: MediaQuery.sizeOf(context).height*0.4,
+                        child: wheelPrevs,
+                      )),
+                      // secondChild: Text('sadasd'),
+                      crossFadeState: srch!=''?
+                        CrossFadeState.showFirst
+                        : CrossFadeState.showSecond,
+                      duration: const Duration(milliseconds: 1000),
+                      reverseDuration: const Duration(milliseconds:1500),
                     ),
                   )
                   else
-                    Expanded(
-                      child:  PlacesGrid.fromPlace(ps: ps) ,
-                    )
+                    if(ps.isNotEmpty)
+                      Expanded(
+                        child:  PlacesGrid.fromPlace(ps: ps) ,
+                      )
+                    else 
+                      Column(
+                        children: [
+                          RichText(
+                            text:const TextSpan(
+                              text: 'нет результатов поиска',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold, 
+                                fontSize: 18, 
+                                letterSpacing: 1,
+                                color: Colors.black,   
+                              )
+                            ),
+                          ),
+                          const Icon(
+                            Icons.sentiment_dissatisfied_outlined,
+                            size: 50,
+                            )
+                        ],
+                      ),
                 ],
               ),
             ),
